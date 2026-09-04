@@ -50,6 +50,9 @@ if [ "$SQLI_CODE" = "403" ]; then
   echo "  ✓ WAF 成功拦截 SQL 注入"
 else
   echo "  ⚠ WAF 可能处于检测模式（仍会记录告警）"
+  if [ "$SQLI_CODE" = "200" ] || [ "$SQLI_CODE" = "500" ]; then
+    echo "  返回 $SQLI_CODE 说明注入已影响应用（200=正常响应 / 500=后端异常）"
+  fi
 fi
 echo ""
 

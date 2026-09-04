@@ -27,14 +27,22 @@ echo ""
 # 2. 获取 API 数据（无认证的公开 API）
 echo "[Step 2] 获取公开 API 数据（无防护的 API 接口）..."
 RESPONSE=$(curl -s "$JUICE_SHOP_URL/rest/products" | head -c 200)
-echo "  API 返回数据（前200字符）: $RESPONSE"
+echo "  API 返回数据 (前200字符): $RESPONSE"
 echo ""
 
 # 3. 尝试简单的 SQL 注入（展示没有 WAF 时的脆弱性）
 echo "[Step 3] 尝试 SQL 注入（无 WAF 防护，请求应正常到达后端）..."
 SQLI_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
-  "$JUICE_SHOP_URL/rest/products/search?q=' OR 1=1 --")
-echo "  注入请求返回 HTTP $SQLI_RESPONSE（应非 403，因为没有 WAF 拦截）"
+  "${JUICE_SHOP_URL}/rest/products/search?q=%27%20OR%201%3D1%20--" || true)
+echo "  注入请求返回 HTTP $SQLI_RESPONSE"
+if [ "$SQLI_RESPONSE" = "403" ]; then
+  echo "  ✗ 意外：请求被 403 拦截（不应出现在本课）"
+else
+  echo "  ✓ 请求直达后端，未被 WAF 拦截（非 403）"
+  if [ "$SQLI_RESPONSE" = "200" ] || [ "$SQLI_RESPONSE" = "500" ]; then
+    echo "  返回 $SQLI_RESPONSE 说明 SQL 注入已影响应用（200=正常响应 / 500=后端异常）"
+  fi
+fi
 echo ""
 
 # 4. 查看网络配置
@@ -47,6 +55,6 @@ echo "============================================"
 echo "  结论"
 echo "============================================"
 echo "  Juice Shop 暴露在公网，没有任何安全防护。"
-echo "  API 接口可直接访问，SQL 注入请求未被拦截。"
+echo "  API 接口可直接访问，SQL 注入请求直达后端。"
 echo "  下一课：部署 WAF (Nginx + ModSecurity) 来保护它！"
 echo "============================================"
