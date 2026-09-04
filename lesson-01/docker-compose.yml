@@ -1,0 +1,22 @@
+version: "3.8"
+
+networks:
+  # web-net: Juice Shop 所在的网络，对外暴露 3000 端口
+  web-net:
+    driver: bridge
+
+services:
+  juice-shop:
+    image: bkimminich/juice-shop:latest
+    container_name: juice-shop
+    networks:
+      - web-net
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

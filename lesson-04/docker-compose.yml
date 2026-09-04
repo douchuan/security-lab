@@ -1,0 +1,82 @@
+version: "3.8"
+
+networks:
+  dmz-net:
+    driver: bridge
+  app-net:
+    driver: bridge
+    internal: true
+  monitor-net:
+    driver: bridge
+  hids-net:
+    driver: bridge
+
+services:
+  # WAF: Nginx + ModSecurity
+  nginx-modsecurity:
+    image: owasp/modsecurity-crs:nginx
+    container_name: nginx-modsecurity
+    networks:
+      - dmz-net
+      - app-net
+    ports:
+      - "80:80"
+    volumes:
+      - ../lesson-02/configs/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      juice-shop:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # 后端应用
+  juice-shop:
+    image: bkimminich/juice-shop:latest
+    container_name: juice-shop
+    networks:
+      - app-net
+      - hids-net
+    expose:
+      - "3000"
+    volumes:
+      - juice-shop-data:/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # NIDS: Suricata
+  suricata:
+    image: jasonish/suricata:latest
+    container_name: suricata
+    networks:
+      - monitor-net
+      - app-net
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ../lesson-03/configs/suricata.yaml:/etc/suricata/suricata.yaml:ro
+      - suricata-log:/var/log/suricata
+    command: >
+      -c /etc/suricata/suricata.yaml
+      -i eth1
+    restart: unless-stopped
+
+  # HIDS: Wazuh Agent (模拟 — 监控 Juice Shop 容器)
+  wazuh-agent:
+    image: wazuh/wazuh-agent:4.9.0
+    container_name: wazuh-agent
+    networks:
+      - hids-net
+    volumes:
+      - ./configs/ossec.conf:/var/ossec/etc/ossec.conf:ro
+    environment:
+      - WAZUH_MANAGER=wazuh-agent
+    restart: unless-stopped
+
+volumes:
+  suricata-log:
+  juice-shop-data:

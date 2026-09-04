@@ -1,0 +1,46 @@
+# Suricata 配置文件
+# 用于检测端口扫描等网络层攻击
+
+vars:
+  address-groups:
+    HOME_NET: "[10.0.0.0/8,172.16.0.0/12,192.168.0.0/16]"
+    EXTERNAL_NET: "!$HOME_NET"
+
+default-log-dir: /var/log/suricata
+
+# 输出配置
+outputs:
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: eve.json
+      types:
+        - alert:
+            payload: yes
+            payload-printable: yes
+            packet: yes
+            http-body: yes
+            http-body-printable: yes
+        - http:
+            extended: yes
+        - dns:
+            enabled: yes
+        - tls:
+            extended: yes
+        - files:
+            force-magic: yes
+        - stats:
+            enabled: yes
+            totals: yes
+            threads: no
+
+# 规则配置
+# 端口扫描检测
+detect:
+  scan-consolidated-alerts: yes
+
+# 加载默认规则集
+default-rule-path: /var/lib/suricata/rules
+
+rule-files:
+  - suricata.rules

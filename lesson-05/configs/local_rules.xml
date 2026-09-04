@@ -1,0 +1,29 @@
+<!-- Wazuh Manager 本地规则 -->
+<!-- 暴力破解检测规则 -->
+
+<group name="local,web,authentication,bruteforce,">
+
+  <!-- 规则 100001: 检测到失败的登录尝试 -->
+  <rule id="100001" level="3">
+    <decoded_as>json</decoded_as>
+    <field name="message">Failed login attempt</field>
+    <description>Failed login attempt detected from $(data.srcip)</description>
+  </rule>
+
+  <!-- 规则 100002: 暴力破解 — 短时间大量失败登录 -->
+  <rule id="100002" level="10" frequency="8" timeframe="120">
+    <if_matched_sid>100001</if_matched_sid>
+    <same_source_ip />
+    <description>Brute force attack detected — multiple failed login attempts from $(data.srcip)</description>
+    <group>bruteforce,authentication,</group>
+  </rule>
+
+  <!-- 规则 100003: 暴力破解成功（失败后突然成功） -->
+  <rule id="100003" level="12">
+    <if_matched_sid>100002</if_matched_sid>
+    <field name="message">Successful login</field>
+    <description>Possible successful brute force attack from $(data.srcip)</description>
+    <group>bruteforce,authentication,high_severity,</group>
+  </rule>
+
+</group>
