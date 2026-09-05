@@ -1,27 +1,21 @@
 # Source markdown files
-SRCS = README.md lesson-01.md lesson-02.md lesson-03.md lesson-04.md lesson-05.md lesson-06.md
-HTMLS = $(SRCS:.md=.html)
-PPTXS = $(SRCS:.md=.pptx)
+SRCS = README.md lesson-01.md lesson-02.md lesson-03.md lesson-04.md lesson-05.md lesson-06.md SETUP.md
+PDFS = $(SRCS:.md=.pdf)
 
-# 重新生成所有格式
-all: html pptx
+# 生成全部 PDF
+all: pdf
 
-html: $(HTMLS)
+pdf: $(PDFS)
 
-%.html: %.md
-	marp $< --html --output $@
+%.pdf: %.md
+	marp $< --pdf --output $@
 
-pptx: $(PPTXS)
-
-%.pptx: %.md
-	marp $< --pptx --output $@
-
-# 打开 HTML 预览
+# 打开 PDF 预览
 open:
-	open README.html
+	open README.pdf
 
 # 清理生成的文件
 clean:
-	rm -f *.html *.pptx
+	rm -f *.pdf
 
-.PHONY: all html pptx open clean
+.PHONY: all pdf open clean
