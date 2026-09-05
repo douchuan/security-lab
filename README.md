@@ -1,57 +1,106 @@
-# Security Lab
+# 🛡️ Security Lab — 你是 CISO，你会怎么做？
 
-一个面向实习生的网络安全实践项目，通过 Docker Compose 搭建完整的企业安全检测链路。
+> **这不是一个普通的实验课。这是一个安全事件响应模拟。**
+
+每一节课，你都将扮演一家公司的 **首席信息安全官（CISO）**。公司正面临真实的安全威胁，你需要做出决策、部署防御、观察效果。
 
 > **攻击 → 防火墙 → WAF → NIDS/HIDS → SIEM → 安全告警 → 态势感知**
 
-## 课程结构
+---
 
-本项目分为六次课，每次课一个独立文件夹：
+## 📋 课程总览
 
-| 课程 | 主题 | 新增组件 | 攻击场景 |
-|------|------|----------|----------|
-| [Lesson 01](./lesson-01/) | 环境搭建 | Juice Shop | 验证应用可访问性 |
-| [Lesson 02](./lesson-02/) | WAF | Nginx + ModSecurity | SQL 注入拦截 |
-| [Lesson 03](./lesson-03/) | NIDS | Suricata | 端口扫描检测 |
-| [Lesson 04](./lesson-04/) | HIDS | Wazuh Agent | 文件篡改检测 |
-| [Lesson 05](./lesson-05/) | SIEM | Wazuh Manager | 暴力破解关联 |
-| [Lesson 06](./lesson-06/) | Dashboard | Wazuh UI + OpenSearch | 端到端全链路 |
+| 课程 | 安全事件 | 你的行动 | 新增能力 |
+|------|----------|----------|----------|
+| [Lesson 01](./lesson-01/) | 🔴 公司的脆弱应用裸奔在公网 | 部署应用并认识到它的危险性 | 理解攻击面 |
+| [Lesson 02](./lesson-02/) | 🔴 SQL 注入正在窃取数据库 | 部署 WAF 拦截 Web 攻击 | Web 应用防火墙 |
+| [Lesson 03](./lesson-03/) | 🟡 攻击者在扫描你的网络 | 部署 NIDS 看见网络层威胁 | 网络入侵检测 |
+| [Lesson 04](./lesson-04/) | 🟠 有人篡改了你服务器上的文件 | 部署 HIDS 监控主机层 | 主机入侵检测 |
+| [Lesson 05](./lesson-05/) | 🔴 暴力破解正在撞库你的系统 | 部署 SIEM 关联分析日志 | 安全信息与事件管理 |
+| [Lesson 06](./lesson-06/) | 🟢 你需要一张全景态势图 | 完整链路 + Dashboard | 端到端可视化 |
 
-每次课的内容都是累积的 — 后面的课程包含前面课程的所有组件，并添加一个新的安全能力。
+---
 
-## 快速开始
+## 🚀 快速开始
 
 ```bash
-# 选择要学习的课程
+# 选择你要防御的战场
 cd lesson-01
 
-# 启动环境
+# 启动你的安全环境
 docker compose up -d
 
-# 运行攻击演示
+# 运行攻击，观察结果
 bash attack.sh
 
-# 查看日志
+# 查看防御日志
 docker compose logs -f
 
-# 清理
+# 清理战场
 docker compose down
 ```
 
-## 系统要求
+## 🖥️ 系统要求
 
 - Docker + Docker Compose
 - Lesson 01-03: 最低 2 GB RAM
 - Lesson 04-06: 最低 8 GB RAM（Wazuh 组件较重）
 - Suricata 的流量捕获功能需要 Linux 环境（macOS 上可能受限）
 
-## 技术栈
+## 🏗️ 完整安全架构
 
-- **WAF**: Nginx + ModSecurity (OWASP CRS)
-- **Web 应用**: OWASP Juice Shop
-- **NIDS**: Suricata
-- **HIDS / SIEM / Dashboard**: Wazuh (Agent → Manager → Dashboard on OpenSearch)
+```text
+                         攻击者
+                            │
+                            ▼
+                     ┌─────────────┐
+                     │  Firewall   │
+                     └──────┬──────┘
+                            │
+                            ▼
+                     ┌─────────────┐
+                     │     WAF     │  ← 应用层防御
+                     └──────┬──────┘
+                            │
+                            ▼
+                     ┌─────────────┐
+                     │ Web Service │  ← 你的业务应用
+                     │ Juice Shop  │
+                     └──────┬──────┘
+                            │
+              ┌─────────────┴─────────────┐
+              │                           │
+              ▼                           ▼
+       ┌─────────────┐             ┌─────────────┐
+       │  Suricata   │             │   Wazuh     │
+       │    NIDS     │             │    HIDS     │
+       └──────┬──────┘             └──────┬──────┘
+              │                           │
+              └─────────────┬─────────────┘
+                            ▼
+                     ┌─────────────┐
+                     │    SIEM     │  ← 关联分析
+                     │    Wazuh    │
+                     └──────┬──────┘
+                            │
+                            ▼
+                     ┌─────────────┐
+                     │  Dashboard  │  ← 你的作战大屏
+                     │  Security   │
+                     │  Situation  │
+                     └─────────────┘
+```
 
-## 详细文档
+## 🎯 CISO 学习路径
+
+每一次课都是一次 **安全事件响应**。你会经历：
+
+1. **🚨 事件发生** — 一个真实场景的安全告急
+2. **🧠 CISO 决策** — 你会如何应对？
+3. **🛠️ 动手防御** — 部署安全组件
+4. **⚔️ 验证效果** — 运行攻击脚本看防御是否生效
+5. **📝 反思总结** — 这个防御够吗？下一步呢？
+
+## 📖 详细文档
 
 - [项目需求文档](./docs/requirements.md)
