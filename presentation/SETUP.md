@@ -62,8 +62,6 @@ curl --version
 
 ---
 
-## 推荐软件
-
 ### 5. nmap（端口扫描工具）
 
 **用途：** Lesson 03 端口扫描演示
@@ -136,14 +134,6 @@ sudo lsof -i :443
 sudo kill <PID>
 ```
 
-### Q: 无法全局安装 Marp CLI（权限问题）
-
-**解决：** 使用 npx 临时运行，无需全局安装：
-```bash
-cd presentation
-npx @marp-team/marp-cli README.md --pptx --output README.pptx
-```
-
 ---
 
 ## 网络端口占用一览
@@ -160,4 +150,4 @@ npx @marp-team/marp-cli README.md --pptx --output README.pptx
 
 ---
 
-*完成以上准备后，即可开始 Lesson 01 的实验。*
+*完成以上准备后，即可开始本课程*
