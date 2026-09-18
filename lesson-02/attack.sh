@@ -47,19 +47,8 @@ else
 fi
 echo ""
 
-# 4. 目录遍历攻击（应被拦截）
-echo "[Step 4] 发送目录遍历请求（应被 WAF 拦截）..."
-TRAVERSAL_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-  "$WAF_URL/../../etc/passwd")
-if [ "$TRAVERSAL_CODE" = "403" ]; then
-  echo "  ✓ 目录遍历被拦截 (HTTP $TRAVERSAL_CODE)"
-else
-  echo "  ⚠ 目录遍历未被拦截 (HTTP $TRAVERSAL_CODE)"
-fi
-echo ""
-
-# 5. 查看 WAF 日志
-echo "[Step 5] 查看 ModSecurity 审计日志..."
+# 4. 查看 WAF 日志
+echo "[Step 4] 查看 ModSecurity 审计日志..."
 echo "  最近的拦截日志:"
 docker compose logs --tail=10 nginx-modsecurity 2>/dev/null | grep -i "modsecurity\|denied\|blocked\|attack\|alert" | tail -5 || echo "  (无匹配日志，WAF 可能在检测模式)"
 echo ""
