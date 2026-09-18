@@ -1,131 +1,30 @@
----
-marp: true
-theme: gaia
-class: lead
-paginate: true
-backgroundColor: #0a0e27
-color: #e0e0e0
-style: |
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
-  :root {
-    --color-bg: #0a0e27;
-    --color-primary: #00d4ff;
-    --color-danger: #ff4757;
-    --color-success: #2ed573;
-    --color-warning: #ffa502;
-    --color-text: #e0e0e0;
-    --color-muted: #8a8fa8;
-  }
-  * {
-    font-family: 'Noto Sans SC', sans-serif;
-  }
-  section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #00d4ff, #7c3aed, #ff4757);
-  }
-  h1 {
-    color: #00d4ff;
-    font-size: 2.4em;
-    font-weight: 900;
-    text-shadow: 0 0 40px rgba(0, 212, 255, 0.3);
-  }
-  h2 {
-    color: #00d4ff;
-    font-size: 1.6em;
-    font-weight: 700;
-    border-left: 4px solid #00d4ff;
-    padding-left: 16px;
-  }
-  h3 {
-    color: #7c3aed;
-    font-size: 1.2em;
-  }
-  strong {
-    color: #00d4ff;
-  }
-  .danger { color: #ff4757; font-weight: 700; }
-  .success { color: #2ed573; font-weight: 700; }
-  .warning { color: #ffa502; font-weight: 700; }
-  .muted { color: #8a8fa8; }
-  table {
-    font-size: 0.75em;
-    border-collapse: collapse;
-    width: 100%;
-  }
-  th {
-    background: rgba(0, 212, 255, 0.15);
-    color: #00d4ff;
-    padding: 8px 12px;
-    border: 1px solid rgba(0, 212, 255, 0.3);
-  }
-  td {
-    padding: 6px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  code {
-    background: rgba(124, 58, 237, 0.2);
-    color: #c4b5fd;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.85em;
-  }
-  blockquote {
-    border-left: 3px solid #7c3aed;
-    padding-left: 16px;
-    color: #8a8fa8;
-    font-style: italic;
-    margin: 20px 0;
-  }
----
-
-<!-- _class: lead -->
-
 # 🛡️ Lesson 02
 
 ## SQL 注入正在发生——部署第一道防线
 
 ---
 
-## 回顾：当前安全链路
+## 回顾：上节课的结构
 
+```text
+攻击者
+   │
+   ▼
+Juice Shop
 ```
-攻击者 → WAF (新课) → Juice Shop
-          ↓
-    NIDS (下节课) → HIDS → SIEM → Dashboard
-```
 
-上节课我们发现了问题：应用裸奔，没有任何防护。
-
----
-
-## 场景：WAF 本可以阻止 Equifax
-
-> **安全团队事后发现：如果及时部署了 WAF 并更新规则，攻击本可以被拦截。**
-
-夜里收到消息：
-
-- 攻击者正在进行 SQL 注入
-- 试图绕过登录、窃取数据库、篡改数据
-- 应用直接暴露，没有任何东西挡在攻击者和数据库之间
-
-**立即决策：部署 WAF，现在就部署。**
+上节课我们发现了问题：应用裸奔，没有任何防护, 攻击者的 HTTP 请求直接到达应用。
 
 ---
 
 ## 新架构：WAF 上线
 
 ```
-  ☠️ 攻击者
-       │
-       ▼ http://localhost:80
+       ☠️ 攻击者
+         │
+         ▼ http://localhost:80
 ┌──────────────────┐
-│ WAF (Nginx +     │  ← 新防线：检测并拦截恶意请求
-│  ModSecurity)    │     OWASP CRS 规则集已启用
+│       WAF        │  ← 新防线：检测并拦截恶意请求, OWASP CRS 规则集已启用
 └────────┬─────────┘
          │ 内部网络
          ▼
@@ -136,80 +35,79 @@ style: |
 
 ---
 
-## 关键概念：SQL 注入
+## WAF 是什么
 
-> **SQL Injection** — 通过在用户输入中插入恶意 SQL 代码，使后端数据库执行非预期的命令。
+WAF: Web Application Firewall
 
-**经典示例：**
-```
-登录输入: admin' OR 1=1 --
-拼接后的 SQL:
-  SELECT * FROM users WHERE username = 'admin' OR 1=1 --'
-                                      ↑ 永远为真
-结果：绕过认证，以 admin 身份登录
-```
+![WAF 架构](./02/waf.jpg)
 
-**本实验的测试：**
-```bash
-curl "http://localhost:80/rest/products/search?q=%27%20OR%201%3D1%20--"
-```
+WAF 处理: 
 
----
+- URL
+- HTTP 参数
+- Cookie
+- 请求参数是否包含 SQL Injection 特征
+- 请求参数是否包含 XSS 的攻击特征
 
-## 攻击 vs 防御对比
+工作原理：
 
-| 攻击类型 | 无 WAF | 有 WAF |
-|----------|--------|--------|
-| SQL 注入 | <span class="danger">💀 直达后端</span> | <span class="success">🛡️ 403 拦截</span> |
-| XSS | <span class="danger">💀 直达后端</span> | <span class="success">🛡️ 403 拦截</span> |
-| 目录遍历 | <span class="danger">💀 直达后端</span> | <span class="success">🛡️ 403 拦截</span> |
-
-```bash
-# 正常请求 — 应通过
-curl http://localhost:80
-
-# SQL 注入 — 应被拦截 (403)
-curl "http://localhost:80/rest/products/search?q=%27%20OR%201%3D1%20--"
-
-# XSS — 应被拦截 (403)
-curl "http://localhost:80/?q=%3Cscript%3Ealert(1)%3C/script%3E"
-```
-
----
-
-## 关键概念：WAF 是什么
-
-**WAF (Web Application Firewall)** — 工作在 OSI 第 7 层，专门检测 HTTP/HTTPS 流量。
-
-**工作原理：**
 ```
 攻击者请求 → Nginx 接收 → ModSecurity 检测 → 匹配规则？
   ├── 是 → 返回 403，记录审计日志
   └── 否 → 转发到后端 Juice Shop
 ```
 
-**两种模式：**
-- **检测模式** — 只记录告警，不拦截（测试阶段）
-- **拦截模式** — 匹配即返回 403（生产环境）
-
 ---
 
-## 关键概念：OWASP CRS
+## 从业务角度理解 WAF
 
-**OWASP Core Rule Set** — ModSecurity 的"知识来源"，包含数千条预定义检测规则。
+WAF 解决了什么问题 ？
 
-覆盖的攻击类型：
-- SQL Injection
-- Cross-Site Scripting (XSS)
-- Local/Remote File Inclusion
-- Remote Code Execution
-- HTTP Protocol Violations
+### SQL Injection 
 
-> WAF 不是魔法，它基于已知攻击模式匹配。规则库必须及时更新。
+> **SQL Injection**: 通过在用户输入中插入恶意 SQL 代码，使后端数据库执行非预期的命令。
 
----
+**本实验的测试：**
+```bash
+curl "http://localhost:80/rest/products/search?q=%27%20OR%201%3D1%20--"
+```
 
-## 关键概念：XSS
+WAF 把 HTTP 请求解析出来以后，可以看到：
+
+```text
+Method:
+GET
+
+URL:
+/rest/products/search
+
+Parameter:
+q=' OR 1=1 --
+```
+
+SQL Injection 的典型特征:
+
+```sql
+' OR 1=1 --
+```
+
+拼接的核心是：
+
+1. payload 里的 `'` 先闭合掉程序原有的引号
+2. `OR 1=1` 构造恒真条件
+3. `--` 把后面残余的 SQL 注释掉
+
+比如:
+
+```sql
+SELECT * FROM products WHERE name LIKE '%<用户输入>%'
+
+-- sql 注入之后的效果
+
+SELECT * FROM products WHERE name LIKE '%' OR 1=1 --%'
+```
+
+### XSS
 
 > **跨站脚本 (XSS)** — 将恶意 JavaScript 注入到网页中，在其他用户浏览器中执行。
 
@@ -219,12 +117,123 @@ curl "http://localhost:80/?q=%3Cscript%3Ealert(1)%3C/script%3E"
 效果：窃取用户 Session Cookie → 会话劫持
 ```
 
-**三种类型：**
-| 类型 | 存储位置 | 危险程度 |
-|------|----------|---------|
-| 反射型 | URL 参数 | 中 |
-| 存储型 | 数据库 | 高 |
-| DOM 型 | 前端代码 | 中-高 |
+**Note:**
+
+WAF 由于基于已知攻击模式进行匹配, 所以，规则库必须及时更新。
+
+---
+
+## 实验环节
+
+实验
+
+---
+
+## 从 OSI 7 层模型角度理解 WAF
+
+WAF 工作在 OSI 第 7 层，也就是 Application Layer。
+
+### OSI 7 层模型
+
+![OSI 7 层模型](./02/osi7layers.png)
+
+### 7-layer: Application Layer
+
+这里就出现了我们今天真正关心的东西：HTTP
+
+比如我们访问：
+
+```text
+http://localhost:80
+```
+
+实际上发生了很多层次的事情, 可以简单理解成：
+
+```text
+Application
+HTTP
+   ↓
+Transport
+TCP : 80
+   ↓
+Network
+IP
+   ↓
+Data Link
+Ethernet
+   ↓
+Physical
+```
+
+所以当 WAF 说：
+
+> “我要检查这个 HTTP 请求里面有没有 SQL Injection。”
+
+它必须能够理解：
+
+- HTTP
+- URL
+- Header
+- Cookie
+- Parameter
+- Body
+
+因此 WAF 主要工作在：**OSI Layer 7，也就是应用层**
+
+---
+
+## 从部署角度理解 WAF
+
+### DMZ
+
+![DMZ](./02/dmz.png)
+
+通过各种网络设备，实现的逻辑概念
+
+- Firewall
+- VLAN
+- Router
+- Network ACL
+- 网络接口
+
+## 纵深防御 ( Defense in Depth )
+
+串接安全设备
+
+
+```text
+                    Attacker
+                       │
+                       ▼
+                ┌─────────────┐
+                │  Firewall   │
+                │   L3 / L4   │
+                └──────┬──────┘
+                       │
+                       ▼
+                ┌─────────────┐
+                │     WAF     │
+                │     L7      │
+                └──────┬──────┘
+                       │
+                       ▼
+                ┌─────────────┐
+                │ Application │
+                └──────┬──────┘
+                       │
+                 Network / Host
+                       │
+                       ▼
+                ┌─────────────┐
+                │ NIDS / HIDS │
+                └──────┬──────┘
+                       │
+                       ▼
+                     SIEM
+                       │
+                       ▼
+                   Dashboard
+```
 
 ---
 
