@@ -107,6 +107,43 @@ SELECT * FROM products WHERE name LIKE '%<用户输入>%'
 SELECT * FROM products WHERE name LIKE '%' OR 1=1 --%'
 ```
 
+### 造成 SQL 注入的原因
+
+**错误写法**
+
+```java
+// 用户输入直接来自请求参数
+String username = request.getParameter("username");
+String password = request.getParameter("password");
+
+// 危险：把输入拼进 SQL 文本
+String sql = "SELECT * FROM users WHERE username = '" + username
+           + "' AND password = '" + password + "'";
+
+Statement stmt = connection.createStatement();
+ResultSet rs = stmt.executeQuery(sql);
+```
+
+**正确写法**
+
+```java
+String username = request.getParameter("username");
+String password = request.getParameter("password");
+
+// 安全：? 是占位符，SQL 文本在编译时已经固定
+String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+
+PreparedStatement pstmt = connection.prepareStatement(sql);
+pstmt.setString(1, username);   // 输入以参数值传入
+pstmt.setString(2, password);
+ResultSet rs = pstmt.executeQuery();
+```
+
+- SQL 语句的结构（`SELECT ... WHERE username = ?`）在预编译阶段就确定下来
+- `?` 占位符由数据库驱动作为**参数值**单独传递, 用户输入被当作普通字符串数据 (放进 `username` 字段的值里，**无法改变语句结构**)
+
+这是防御 SQL 注入的首选和标准做法
+
 ### XSS
 
 > **跨站脚本 (XSS)** — 将恶意 JavaScript 注入到网页中，在其他用户浏览器中执行。
