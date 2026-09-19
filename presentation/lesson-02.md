@@ -79,6 +79,14 @@ WAF 处理:
 
 ## 从业务角度理解 WAF
 
+前端  ->  后端  -> 数据库
+
+linux kernel, nginx, mysql
+
+bash
+
+leetcode
+
 WAF 解决了什么问题 ？
 
 ### SQL Injection 

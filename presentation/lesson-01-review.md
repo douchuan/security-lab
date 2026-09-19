@@ -2,6 +2,7 @@
 
 - docker
 - docker compose
+  - k8s, kubernetes
 - Juice Shop
 
 ---
@@ -62,5 +63,9 @@
 # 标准
 
 抓手
+
+CC
+
+ISO 27000, ISO 27001
 
 ![](./01/classified-protection.png)
