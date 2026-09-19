@@ -43,11 +43,16 @@ WAF: Web Application Firewall
 
 WAF 处理: 
 
-- URL
-- HTTP 参数
-- Cookie
-- 请求参数是否包含 SQL Injection 特征
-- 请求参数是否包含 XSS 的攻击特征
+- 恶意爬虫、漏洞扫描器识别
+- 协议违规、参数污染、畸形请求
+- HTTP 请求走私
+- 路径遍历 / 本地文件包含
+- 远程文件包含
+- 远程命令执行 / 命令注入
+- PHP 注入、Node.js 注入
+- XSS 跨站脚本
+- SQL 注入
+- 其他基于规则的应用攻击（如 Java 相关攻击）
 
 工作原理：
 
@@ -56,6 +61,19 @@ WAF 处理:
   ├── 是 → 返回 403，记录审计日志
   └── 否 → 转发到后端 Juice Shop
 ```
+
+---
+
+## 开源 WAF 产品
+
+| 产品 | 技术/语言 | 部署形态 | 检测方式 | 维护状态 | 管理方式 |
+|---|---|---|---|---|---|
+| ModSecurity + CRS | C | Apache/nginx 模块 | 正则 + 异常分 | 引擎移交社区、CRS 活跃 | 配置文件 |
+| Coraza | Go | Caddy/Traefik/Envoy/nginx 连接器 | 兼容 CRS 规则 | 活跃 | 配置文件 |
+| NAXSI | C | nginx 模块 | 签名 + 白名单 | 活跃度低 | 配置文件 |
+| 雷池 SafeLine | Go 等 | 独立容器/反向代理 | 语义分析 | 活跃（商业公司维护） | Web 界面 |
+| BunkerWeb | nginx 基础 | 独立容器 | 规则 + 安全模块 | 活跃 | Web 界面 |
+| CrowdSec WAF | Go | 旁路/模块 | 行为 + IP 信誉 | 活跃 | 配置文件/CLI |
 
 ---
 
