@@ -1,3 +1,5 @@
+%YAML 1.1
+---
 # Suricata 配置文件
 # 用于检测端口扫描等网络层攻击
 
@@ -5,8 +7,40 @@ vars:
   address-groups:
     HOME_NET: "[10.0.0.0/8,172.16.0.0/12,192.168.0.0/16]"
     EXTERNAL_NET: "!$HOME_NET"
+    HTTP_SERVERS: "$HOME_NET"
+    SMTP_SERVERS: "$HOME_NET"
+    SQL_SERVERS: "$HOME_NET"
+    TELNET_SERVERS: "$HOME_NET"
+    DNS_SERVERS: "$HOME_NET"
+  port-groups:
+    HTTP_PORTS: "80"
+    SHELLCODE_PORTS: "!80"
+    SSH_PORTS: "22"
+    FTP_PORTS: "21"
+    ORACLE_PORTS: "1521"
+    SMTP_PORTS: "25"
+
+# 禁用不需要的协议解析（避免 ET 规则中的 dnp3/modbus/krb5/snmp/rdp 规则报错）
+app-layer:
+  protocols:
+    dnp3:
+      enabled: no
+    modbus:
+      enabled: no
+    krb5:
+      enabled: no
+    snmp:
+      enabled: no
+    rdp:
+      enabled: no
+    bittorrent-dht:
+      enabled: no
 
 default-log-dir: /var/log/suricata
+
+# 抓包接口配置
+af-packet:
+  - interface: eth0
 
 # 输出配置
 outputs:
@@ -43,4 +77,5 @@ detect:
 default-rule-path: /var/lib/suricata/rules
 
 rule-files:
+  - /etc/suricata/rules/custom.rules
   - suricata.rules

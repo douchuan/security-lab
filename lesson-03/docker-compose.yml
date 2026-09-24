@@ -2,9 +2,6 @@
 networks:
   app-net:
     driver: bridge
-    internal: true
-  monitor-net:
-    driver: bridge
 
 services:
   # 后端应用
@@ -13,8 +10,8 @@ services:
     container_name: juice-shop
     networks:
       - app-net
-    expose:
-      - "3000"
+    ports:
+      - "3000:3000"
     restart: unless-stopped
 
   # NIDS: Suricata
@@ -22,17 +19,17 @@ services:
     image: jasonish/suricata:latest
     container_name: suricata
     networks:
-      - monitor-net
       - app-net
     cap_add:
       - NET_ADMIN
       - NET_RAW
     volumes:
       - ./configs/suricata.yaml:/etc/suricata/suricata.yaml:ro
+      - ./configs/rules/custom.rules:/etc/suricata/rules/custom.rules:ro
       - suricata-log:/var/log/suricata
+    entrypoint: suricata
     command: >
-      -c /etc/suricata/suricata.yaml
-      -i eth1
+      -c /etc/suricata/suricata.yaml -l /var/log/suricata -i eth0
     restart: unless-stopped
 
 volumes:

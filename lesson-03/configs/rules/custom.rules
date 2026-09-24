@@ -1,0 +1,7 @@
+# 端口扫描检测规则
+# 检测 TCP SYN 到非标准端口的行为（端口扫描特征）
+alert tcp any any -> $HOME_NET 3001:3010 (msg:"ET SCAN Potential Port Scan - connection to closed port"; flow:stateless; flags:S; threshold: type threshold, track by_src, count 3, seconds 60; sid:1000001; rev:1; classtype:attempted-recon;)
+
+alert tcp any any -> $HOME_NET 8080 (msg:"ET SCAN Port Scan - HTTP-Alt probe"; flow:stateless; flags:S; sid:1000002; rev:1; classtype:attempted-recon;)
+
+alert tcp any any -> $HOME_NET 8443 (msg:"ET SCAN Port Scan - HTTPS-Alt probe"; flow:stateless; flags:S; sid:1000003; rev:1; classtype:attempted-recon;)
