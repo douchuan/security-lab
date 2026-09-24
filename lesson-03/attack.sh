@@ -29,18 +29,9 @@ echo ""
 # 3. 端口扫描攻击
 echo "[Step 3] 执行端口扫描（从临时攻击容器）..."
 
-# 创建一个带 nmap 的临时容器来执行扫描
-ATTACKER_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' juice-shop 2>/dev/null | head -1)
-
-if [ -n "$ATTACKER_IP" ]; then
-  echo "  扫描目标: $ATTACKER_IP"
-  docker run --rm --network lesson-03_monitor-net \
-    instrumentisto/nmap -sT -p 80,3000,3306,5432,8080,8443 "$ATTACKER_IP" \
+  docker run --rm --network lesson-03_app-net \
+    instrumentisto/nmap -sT -p 3000,3001,3002,3003,3004,3005,8080,8443 juice-shop \
     --host-timeout 10s 2>/dev/null || echo "  (nmap 扫描完成)"
-else
-  echo "  ⚠ 无法获取目标 IP，尝试扫描 localhost..."
-  nmap -sT localhost -p 80,3000 --host-timeout 10s 2>/dev/null || echo "  (nmap 可能未安装)"
-fi
 echo ""
 
 # 4. 等待 Suricata 处理告警
@@ -75,6 +66,5 @@ echo "============================================"
 echo "  结论"
 echo "============================================"
 echo "  Suricata 监控网络流量，检测到端口扫描行为。"
-echo "  NIDS 与 WAF 的互补：WAF 防护应用层，NIDS 防护网络层。"
 echo "  下一课：添加 HIDS (Wazuh Agent) 检测主机层威胁！"
 echo "============================================"

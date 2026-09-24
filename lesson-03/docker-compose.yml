@@ -1,7 +1,5 @@
 
 networks:
-  dmz-net:
-    driver: bridge
   app-net:
     driver: bridge
     internal: true
@@ -9,23 +7,7 @@ networks:
     driver: bridge
 
 services:
-  # WAF: Nginx + ModSecurity
-  nginx-modsecurity:
-    image: owasp/modsecurity-crs:nginx
-    container_name: nginx-modsecurity
-    networks:
-      - dmz-net
-      - app-net
-    ports:
-      - "80:8080"
-    environment:
-      - BACKEND=http://juice-shop:3000
-      - MODSEC_RULE_ENGINE=On
-    depends_on:
-      - juice-shop
-    restart: unless-stopped
-
-  # 后端应用 (distroless 镜像，无 shell/curl/wget)
+  # 后端应用
   juice-shop:
     image: bkimminich/juice-shop:latest
     container_name: juice-shop
