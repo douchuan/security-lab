@@ -1,45 +1,14 @@
 %YAML 1.1
 ---
-# Suricata 配置文件（参考）
-# Linux host 网络模式下，docker-compose 会动态生成适配的配置文件。
-# 此文件保留作为独立部署时的参考配置。
-
 vars:
   address-groups:
     HOME_NET: "[10.0.0.0/8,172.16.0.0/12,192.168.0.0/16]"
     EXTERNAL_NET: "!$HOME_NET"
-    HTTP_SERVERS: "$HOME_NET"
-    SMTP_SERVERS: "$HOME_NET"
-    SQL_SERVERS: "$HOME_NET"
-    DNS_SERVERS: "$HOME_NET"
   port-groups:
     HTTP_PORTS: "80"
-    SHELLCODE_PORTS: "!80"
     SSH_PORTS: "22"
 
-app-layer:
-  protocols:
-    dnp3:
-      enabled: no
-    modbus:
-      enabled: no
-    krb5:
-      enabled: no
-    snmp:
-      enabled: no
-    rdp:
-      enabled: no
-    bittorrent-dht:
-      enabled: no
-
 default-log-dir: /var/log/suricata
-
-# 抓包接口 — 部署时替换为实际网卡名
-af-packet:
-  - interface: eth0
-    cluster-id: 99
-    cluster-type: cluster_flow
-    defrag: yes
 
 outputs:
   - eve-log:
@@ -50,27 +19,11 @@ outputs:
         - alert:
             payload: yes
             payload-printable: yes
-            packet: yes
-            http-body: yes
-            http-body-printable: yes
-        - http:
-            extended: yes
-        - dns:
-            enabled: yes
-        - tls:
-            extended: yes
-        - files:
-            force-magic: yes
         - stats:
             enabled: yes
             totals: yes
-            threads: no
-
-detect:
-  scan-consolidated-alerts: yes
 
 default-rule-path: /var/lib/suricata/rules
 
 rule-files:
   - /etc/suricata/rules/custom.rules
-  - suricata.rules

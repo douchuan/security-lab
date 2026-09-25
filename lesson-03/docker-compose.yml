@@ -3,7 +3,6 @@ networks:
     driver: bridge
 
 services:
-  # 后端应用
   juice-shop:
     image: bkimminich/juice-shop:latest
     container_name: juice-shop
@@ -13,26 +12,19 @@ services:
       - "3000:3000"
     restart: unless-stopped
 
-  # NIDS: Suricata
-  # 双模式支持：
-  #   1. 单机演示：network_mode: host（Linux 有效，macOS 无效）
-  #   2. 双 VM 演示：普通 bridge + 外部 VM 发起 nmap 扫描（推荐）
   suricata:
     image: jasonish/suricata:latest
     container_name: suricata
-    # 双 VM 模式：注释掉 network_mode，使用普通 bridge
-    # 单机模式：取消注释 network_mode: host
-    # network_mode: host
-    networks:
-      - app-net
+    network_mode: host
     cap_add:
       - NET_ADMIN
       - NET_RAW
     volumes:
-      - ./configs/start-suricata.sh:/etc/suricata/start-suricata.sh:ro
+      - ./configs/suricata.yaml:/etc/suricata/suricata.yaml:ro
       - ./configs/rules/custom.rules:/etc/suricata/rules/custom.rules:ro
       - suricata-log:/var/log/suricata
-    entrypoint: ["sh", "/etc/suricata/start-suricata.sh"]
+    command: >
+      -c /etc/suricata/suricata.yaml -l /var/log/suricata -i any
     restart: unless-stopped
 
 volumes:
