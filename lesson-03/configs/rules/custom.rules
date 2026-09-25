@@ -1,1 +1,2 @@
-alert tcp any any -> $HOME_NET any (msg:"ET SCAN Potential Port Scan"; flow:to_server; flags:S; threshold: type threshold, track by_src, count 5, seconds 30; sid:1000001; rev:1; classtype:attempted-recon;)
+# 端口扫描检测 — 匹配任何 TCP  SYN 包到受保护网络
+alert tcp any any -> $HOME_NET any (msg:"ET SCAN Potential Port Scan"; flags:S; threshold: type both, track by_src, count 5, seconds 30; sid:1000001; rev:1; classtype:attempted-recon;)
