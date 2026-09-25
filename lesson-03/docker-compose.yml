@@ -26,9 +26,13 @@ services:
       - ./configs/suricata.yaml:/etc/suricata/suricata.yaml:ro
       - ./configs/rules/custom.rules:/etc/suricata/rules/custom.rules:ro
       - suricata-log:/var/log/suricata
-    entrypoint: suricata
-    command: >
-      -c /etc/suricata/suricata.yaml -l /var/log/suricata -i eth0
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        # 自动检测可用的网络接口
+        IFACE=$(ip -o link show | awk -F': ' '$2 != "lo" {print $2; exit}')
+        echo "Using interface: $IFACE"
+        exec suricata -c /etc/suricata/suricata.yaml -l /var/log/suricata -i "$IFACE"
     restart: unless-stopped
 
 volumes:

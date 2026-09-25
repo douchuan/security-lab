@@ -34,9 +34,9 @@ app-layer:
 
 default-log-dir: /var/log/suricata
 
-# 抓包接口配置
+# 抓包接口配置（通过命令行 -i 指定接口）
 af-packet:
-  - interface: eth0
+  - interface: default
     cluster-id: 99
     cluster-type: cluster_flow
     defrag: yes
