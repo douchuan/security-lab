@@ -17,13 +17,19 @@ services:
       - ./configs/suricata.yaml:/etc/suricata/suricata.yaml:ro
       - ./configs/rules/custom.rules:/etc/suricata/rules/custom.rules:ro
       - suricata-log:/var/log/suricata
-    # 自动检测所有 UP 状态的物理网卡（不含 lo/docker0/bridge），兼容任意 VirtualBox 网络配置
+    # 智能选网卡：优先 Host-Only 网段（192.168.x.x），其次其他私有网段，兼容 VirtualBox
     entrypoint:
       [
         "sh", "-c",
-        "IFACES=$(ip -o link show up | awk -F': ' '$2 !~ /^(lo|veth|docker|br-)/ {gsub(/@.*/,\"\",$2); print $2}' | paste -sd,); \
-         echo \"Suricata monitoring interfaces: $$IFACES\"; \
-         suricata -c /etc/suricata/suricata.yaml -l /var/log/suricata -i $$IFACES"
+        "IFACE=$(ip -o -4 addr show up | awk '$2 !~ /^(lo|docker|br-|veth)/ && $4 ~ /^192\\.168\\./ {print $2; exit}'); \
+         if [ -z \"$$IFACE\" ]; then \
+           IFACE=$(ip -o -4 addr show up | awk '$2 !~ /^(lo|docker|br-|veth)/ && ($4 ~ /^10\\./ || $4 ~ /^172\\./) {print $2; exit}'); \
+         fi; \
+         if [ -z \"$$IFACE\" ]; then \
+           IFACE=$(ip -o link show up | awk -F': ' '$2 !~ /^(lo|veth|docker|br-)/ {gsub(/@.*/,\"\",$2); print $2; exit}'); \
+         fi; \
+         echo \"Suricata monitoring interface: $$IFACE\"; \
+         suricata -c /etc/suricata/suricata.yaml -l /var/log/suricata -i $$IFACE"
       ]
     restart: unless-stopped
 
