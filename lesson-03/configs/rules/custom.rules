@@ -1,4 +1,4 @@
-# 检测短时间内对多个端口的 TCP 连接（端口扫描特征）
+# 端口扫描检测
 alert tcp any any -> $HOME_NET 3001:3010 (msg:"ET SCAN Potential Port Scan"; threshold: type threshold, track by_src, count 3, seconds 10; sid:1000001; rev:1; classtype:attempted-recon;)
 alert tcp any any -> $HOME_NET 8080 (msg:"ET SCAN Port Scan - HTTP-Alt probe"; sid:1000002; rev:1; classtype:attempted-recon;)
 alert tcp any any -> $HOME_NET 8443 (msg:"ET SCAN Port Scan - HTTPS-Alt probe"; sid:1000003; rev:1; classtype:attempted-recon;)

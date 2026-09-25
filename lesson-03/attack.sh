@@ -1,21 +1,15 @@
 #!/usr/bin/env bash
 # Lesson 03: NIDS (Suricata) Demo
-# 需要 Linux 环境（VirtualBox Ubuntu）
+# macvlan 架构 — 所有容器在同一 Layer2 网络
 
 set -euo pipefail
 
-# 获取 Suricata 监听的物理网卡 IP
-SCAN_TARGET=$(docker exec suricata sh -c "ip -4 addr show | awk '/inet / && !/127.0/ && !/172\./ {print \$2; exit}' | cut -d/ -f1" 2>/dev/null)
-
-echo "[Step 1] 检查 Suricata..."
+echo "[Step 1] 检查服务..."
 docker compose ps --format "{{.Name}} {{.Status}}" | grep -q suricata || { echo "Suricata 未运行"; exit 1; }
 echo "  ✓ Suricata 运行中"
 
-echo "[Step 2] 端口扫描..."
-echo "  目标: $SCAN_TARGET"
-for port in 3000 3001 3002 3003 3004 3005 8080 8443; do
-  (echo >/dev/tcp/$SCAN_TARGET/$port) 2>/dev/null && echo "  Port $port: OPEN" || echo "  Port $port: closed"
-done
+echo "[Step 2] 端口扫描 (从 attacker 容器)..."
+docker exec attacker nmap -sT -p 3000-3005,8080,8443 juice-shop 2>&1 | grep -E "PORT|open|closed|filtered"
 
 echo "[Step 3] 等待告警..."
 sleep 3

@@ -1,21 +1,18 @@
-networks:
-  app-net:
-    driver: bridge
-
 services:
   juice-shop:
     image: bkimminich/juice-shop:latest
     container_name: juice-shop
     networks:
-      - app-net
-    ports:
-      - "3000:3000"
+      lab-net:
+        ipv4_address: 10.0.2.20
     restart: unless-stopped
 
   suricata:
     image: jasonish/suricata:latest
     container_name: suricata
-    network_mode: host
+    networks:
+      lab-net:
+        ipv4_address: 10.0.2.21
     cap_add:
       - NET_ADMIN
       - NET_RAW
@@ -26,13 +23,28 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        IFACE=$$(ip route | grep default | awk '{print $$5}')
-        if [ -z "$$IFACE" ]; then
-          IFACE=$$(ip -4 addr show | awk '/inet / && !/127.0/ && !/172\./ {print $$NF; exit}')
-        fi
+        IFACE=$$(ip -o link show | awk -F': ' '!/lo/ {print $$2; exit}' | tr -d '@ ')
         echo "Suricata listening on: $$IFACE"
         exec suricata -c /etc/suricata/suricata.yaml -l /var/log/suricata -i "$$IFACE"
     restart: unless-stopped
+
+  attacker:
+    image: instrumentisto/nmap:latest
+    container_name: attacker
+    networks:
+      lab-net:
+        ipv4_address: 10.0.2.22
+    entrypoint: ["sleep", "infinity"]
+
+networks:
+  lab-net:
+    driver: macvlan
+    driver_opts:
+      parent: enp0s8
+    ipam:
+      config:
+        - subnet: 10.0.2.0/24
+          gateway: 10.0.2.2
 
 volumes:
   suricata-log:
