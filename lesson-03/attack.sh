@@ -20,10 +20,16 @@ echo ""
 BEFORE_PKTS=$($EVE 2>/dev/null | jq -r 'select(.event_type=="stats") | .stats.capture.kernel_packets' 2>/dev/null | tail -1)
 BEFORE_PKTS=${BEFORE_PKTS:-0}
 
+# 获取物理网卡 IP（Suricata 监听的接口）
+SCAN_TARGET=$(docker exec suricata sh -c "ip -4 addr show | grep -E 'inet ' | grep -v '127.0.0.1' | grep -v '172\.' | head -1 | awk '{print \$2}' | cut -d/ -f1" 2>/dev/null)
+if [ -z "$SCAN_TARGET" ]; then
+  SCAN_TARGET=$(ip route get 1 | awk '{print $7; exit}' 2>/dev/null || hostname -I | awk '{print $1}')
+fi
+
 # Step 3: nmap 端口扫描
 echo "[Step 2] 执行端口扫描（nmap -sT）..."
-echo "  目标: localhost:3000-3005,8080,8443"
-nmap -sT -p 3000-3005,8080,8443 --open localhost 2>&1 | grep -E "PORT|open|closed|filtered"
+echo "  目标: $SCAN_TARGET (3000-3005,8080,8443)"
+nmap -sT -p 3000-3005,8080,8443 --open "$SCAN_TARGET" 2>&1 | grep -E "PORT|open|closed|filtered"
 echo ""
 
 # Step 4: 等待处理
