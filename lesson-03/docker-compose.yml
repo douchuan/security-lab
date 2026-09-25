@@ -29,10 +29,53 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        # 自动检测可用的网络接口
-        IFACE=$(ip -o link show | awk -F': ' '$2 != "lo" {print $2; exit}')
+        # 自动检测可用的网络接口（排除 lo 和 docker0）
+        IFACE=$(ip -4 addr show | grep -E 'inet ' | grep -v '127.0.0.1' | grep -v '172\.' | head -1 | awk '{print $$NF}')
+        if [ -z "$IFACE" ]; then
+          IFACE=$(ip route | grep default | awk '{print $$5}')
+        fi
+        if [ -z "$IFACE" ]; then
+          IFACE=$(ls /sys/class/net/ | grep -v lo | head -1)
+        fi
         echo "Using interface: $IFACE"
-        exec suricata -c /etc/suricata/suricata.yaml -l /var/log/suricata -i "$IFACE"
+
+        # 动态生成 af-packet 配置
+        cat > /etc/suricata/suricata-dynamic.yaml <<EOF
+        %YAML 1.1
+        ---
+        vars:
+          address-groups:
+            HOME_NET: "[10.0.0.0/8,172.16.0.0/12,192.168.0.0/16]"
+            EXTERNAL_NET: "!$$HOME_NET"
+          port-groups:
+            HTTP_PORTS: "80"
+            SSH_PORTS: "22"
+        af-packet:
+          - interface: $IFACE
+            cluster-id: 99
+            cluster-type: cluster_flow
+            defrag: yes
+        default-log-dir: /var/log/suricata
+        outputs:
+          - eve-log:
+              enabled: yes
+              filetype: regular
+              filename: eve.json
+              types:
+                - alert:
+                    payload: yes
+                    payload-printable: yes
+                - stats:
+                    enabled: yes
+                    totals: yes
+        detect:
+          scan-consolidated-alerts: yes
+        default-rule-path: /var/lib/suricata/rules
+        rule-files:
+          - /etc/suricata/rules/custom.rules
+        EOF
+
+        exec suricata -c /etc/suricata/suricata-dynamic.yaml -l /var/log/suricata -i "$IFACE"
     restart: unless-stopped
 
 volumes:

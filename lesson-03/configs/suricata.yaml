@@ -1,7 +1,8 @@
 %YAML 1.1
 ---
-# Suricata 配置文件
-# 用于检测端口扫描等网络层攻击
+# Suricata 配置文件（参考）
+# Linux host 网络模式下，docker-compose 会动态生成适配的配置文件。
+# 此文件保留作为独立部署时的参考配置。
 
 vars:
   address-groups:
@@ -16,7 +17,6 @@ vars:
     SHELLCODE_PORTS: "!80"
     SSH_PORTS: "22"
 
-# 禁用不需要的协议解析（避免 ET 规则中的 dnp3/modbus/krb5/snmp/rdp 规则报错）
 app-layer:
   protocols:
     dnp3:
@@ -34,14 +34,13 @@ app-layer:
 
 default-log-dir: /var/log/suricata
 
-# 抓包接口配置（通过命令行 -i 指定接口）
+# 抓包接口 — 部署时替换为实际网卡名
 af-packet:
-  - interface: default
+  - interface: eth0
     cluster-id: 99
     cluster-type: cluster_flow
     defrag: yes
 
-# 输出配置
 outputs:
   - eve-log:
       enabled: yes
@@ -67,11 +66,9 @@ outputs:
             totals: yes
             threads: no
 
-# 端口扫描检测
 detect:
   scan-consolidated-alerts: yes
 
-# 加载默认规则集
 default-rule-path: /var/lib/suricata/rules
 
 rule-files:
