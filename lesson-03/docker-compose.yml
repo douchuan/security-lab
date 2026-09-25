@@ -17,15 +17,7 @@ services:
       - ./configs/suricata.yaml:/etc/suricata/suricata.yaml:ro
       - ./configs/rules/custom.rules:/etc/suricata/rules/custom.rules:ro
       - suricata-log:/var/log/suricata
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        IFACE=$$(ip route | grep default | awk '{print $$5}')
-        if [ -z "$$IFACE" ]; then
-          IFACE=$$(ls /sys/class/net/ | grep -v lo | head -1)
-        fi
-        echo "Suricata listening on: $$IFACE"
-        exec suricata -c /etc/suricata/suricata.yaml -l /var/log/suricata -i "$$IFACE"
+    entrypoint: ["sh", "-c", "IFACE=$$(ip route | grep default | awk '{print $$5}'); suricata -c /etc/suricata/suricata.yaml -l /var/log/suricata -i $$IFACE"]
     restart: unless-stopped
 
 volumes:

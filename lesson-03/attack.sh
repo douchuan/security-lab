@@ -6,22 +6,11 @@
 
 set -euo pipefail
 
-TARGET="${1:-}"
-if [ -z "$TARGET" ]; then
-  echo "用法: bash attack.sh <VM1的IP>"
-  echo "  在 VM2（攻击者）上运行，扫描 VM1"
-  exit 1
-fi
+TARGET="${1:?用法: bash attack.sh <VM1的IP>}"
 
-echo "[Step 1] 端口扫描 → $TARGET"
-for port in 3000 3001 3002 3003 3004 3005 8080 8443; do
-  if (echo >/dev/tcp/$TARGET/$port) 2>/dev/null; then
-    echo "  Port $port: OPEN"
-  else
-    echo "  Port $port: closed"
-  fi
-done
+echo "[Step 1] nmap 扫描 → $TARGET"
+nmap -sT -p 3000-3005,8080,8443 "$TARGET" 2>&1 | grep -E "PORT|open|closed|filtered"
 
 echo ""
-echo "[Step 2] 请在 VM1 上查看 Suricata 告警："
+echo "[Step 2] 在 VM1 上查看告警："
 echo "  docker compose exec suricata cat /var/log/suricata/eve.json | jq 'select(.event_type==\"alert\")'"
