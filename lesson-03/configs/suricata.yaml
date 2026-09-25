@@ -10,15 +10,11 @@ vars:
     HTTP_SERVERS: "$HOME_NET"
     SMTP_SERVERS: "$HOME_NET"
     SQL_SERVERS: "$HOME_NET"
-    TELNET_SERVERS: "$HOME_NET"
     DNS_SERVERS: "$HOME_NET"
   port-groups:
     HTTP_PORTS: "80"
     SHELLCODE_PORTS: "!80"
     SSH_PORTS: "22"
-    FTP_PORTS: "21"
-    ORACLE_PORTS: "1521"
-    SMTP_PORTS: "25"
 
 # 禁用不需要的协议解析（避免 ET 规则中的 dnp3/modbus/krb5/snmp/rdp 规则报错）
 app-layer:
@@ -41,6 +37,9 @@ default-log-dir: /var/log/suricata
 # 抓包接口配置
 af-packet:
   - interface: eth0
+    cluster-id: 99
+    cluster-type: cluster_flow
+    defrag: yes
 
 # 输出配置
 outputs:
@@ -68,7 +67,6 @@ outputs:
             totals: yes
             threads: no
 
-# 规则配置
 # 端口扫描检测
 detect:
   scan-consolidated-alerts: yes

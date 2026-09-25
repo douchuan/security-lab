@@ -23,7 +23,7 @@ services:
       - NET_ADMIN
       - NET_RAW
     volumes:
-      - ./configs/suricata-host.yaml:/etc/suricata/suricata.yaml:ro
+      - ./configs/suricata.yaml:/etc/suricata/suricata.yaml:ro
       - ./configs/rules/custom.rules:/etc/suricata/rules/custom.rules:ro
       - suricata-log:/var/log/suricata
     entrypoint: suricata
