@@ -17,6 +17,7 @@ services:
       - ./configs/suricata.yaml:/etc/suricata/suricata.yaml:ro
       - ./configs/rules/custom.rules:/etc/suricata/rules/custom.rules:ro
       - suricata-log:/var/log/suricata
+    # 自动检测默认路由网卡（如 enp0s8），启动 Suricata 监听
     entrypoint: ["sh", "-c", "IFACE=$$(ip route | grep default | awk '{print $$5}'); suricata -c /etc/suricata/suricata.yaml -l /var/log/suricata -i $$IFACE"]
     restart: unless-stopped
 
