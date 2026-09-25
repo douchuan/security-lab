@@ -18,7 +18,7 @@ cat > /etc/suricata/suricata-dynamic.yaml <<YAMLEOF
 vars:
   address-groups:
     HOME_NET: "[10.0.0.0/8,172.16.0.0/12,192.168.0.0/16]"
-    EXTERNAL_NET: "!$HOME_NET"
+    EXTERNAL_NET: "!\$$HOME_NET"
   port-groups:
     HTTP_PORTS: "80"
     SSH_PORTS: "22"
