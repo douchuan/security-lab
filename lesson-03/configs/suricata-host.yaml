@@ -1,0 +1,57 @@
+%YAML 1.1
+---
+# Suricata 配置文件 — Linux host network 模式
+# 监听宿主机 eth0 接口，捕获所有进出流量
+
+vars:
+  address-groups:
+    HOME_NET: "[10.0.0.0/8,172.16.0.0/12,192.168.0.0/16]"
+    EXTERNAL_NET: "!$HOME_NET"
+    HTTP_SERVERS: "$HOME_NET"
+    SMTP_SERVERS: "$HOME_NET"
+    SQL_SERVERS: "$HOME_NET"
+    DNS_SERVERS: "$HOME_NET"
+  port-groups:
+    HTTP_PORTS: "80"
+    SHELLCODE_PORTS: "!80"
+    SSH_PORTS: "22"
+
+default-log-dir: /var/log/suricata
+
+# 抓包接口 — host 模式下 eth0 即宿主机主网卡
+af-packet:
+  - interface: eth0
+    cluster-id: 99
+    cluster-type: cluster_flow
+    defrag: yes
+
+# 输出配置
+outputs:
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: eve.json
+      types:
+        - alert:
+            payload: yes
+            payload-printable: yes
+            packet: yes
+            http-body: yes
+            http-body-printable: yes
+        - http:
+            extended: yes
+        - stats:
+            enabled: yes
+            totals: yes
+            threads: no
+
+# 端口扫描检测 — Suricata 内置引擎
+detect:
+  scan-consolidated-alerts: yes
+
+# 规则路径
+default-rule-path: /var/lib/suricata/rules
+
+rule-files:
+  - /etc/suricata/rules/custom.rules
+  - suricata.rules
