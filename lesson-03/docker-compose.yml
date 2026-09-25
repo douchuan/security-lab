@@ -23,7 +23,8 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        IFACE=$$(ip -o link show | awk -F': ' '!/lo/ {print $$2; exit}' | tr -d '@ ')
+        # macvlan 接口名类似 eth0@if2，需要去掉 @ifN 后缀
+        IFACE=$$(ip -o link show | awk -F': ' '!/lo/ {print $$2; exit}' | sed 's/@.*//')
         echo "Suricata listening on: $$IFACE"
         exec suricata -c /etc/suricata/suricata.yaml -l /var/log/suricata -i "$$IFACE"
     restart: unless-stopped
