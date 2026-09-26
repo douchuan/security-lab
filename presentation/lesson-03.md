@@ -209,6 +209,91 @@ IPS (Intrusion Prevention System), 发现攻击, 主动阻断
 
 实验环境搭建参考: [lesson-03-experiment](../docs/lesson-03-experiment.md)
 
+## Suricata 告警示例
+
+```json
+{
+  "timestamp": "2026-09-25T09:21:01.953114+0000",
+  "flow_id": 1560322157847338,
+  "in_iface": "enp0s9",
+  "event_type": "alert",
+  "src_ip": "192.168.56.3",
+  "src_port": 51760,
+  "dest_ip": "192.168.56.2",
+  "dest_port": 8080,
+  "proto": "TCP",
+  "ip_v": 4,
+  "pkt_src": "wire/pcap",
+  "alert": {
+    "action": "allowed",
+    "gid": 1,
+    "signature_id": 1000007,
+    "rev": 1,
+    "signature": "ET SCAN Port Scan - HTTP-Alt probe",
+    "category": "Attempted Information Leak",
+    "severity": 2
+  },
+  "direction": "to_server",
+  "flow": {
+    "pkts_toserver": 1,
+    "pkts_toclient": 0,
+    "bytes_toserver": 74,
+    "bytes_toclient": 0,
+    "start": "2026-09-25T09:21:01.953114+0000",
+    "src_ip": "192.168.56.3",
+    "dest_ip": "192.168.56.2",
+    "src_port": 51760,
+    "dest_port": 8080
+  },
+  "stream": 0
+}
+```
+
+**基础信息**
+
+| 字段 | 含义 |
+|---|---|
+| `timestamp` | 告警产生时间（UTC，ISO8601，含纳秒） |
+| `flow_id` | 这条网络流的唯一标识，用于把同一流的多个事件关联起来 |
+| `in_iface` | 抓到该流量的入口网卡，这里是 `enp0s9`（Suricata 监听的那块卡） |
+| `event_type` | 事件类型，`alert` = 命中检测规则产生告警 |
+| `pkt_src` | 数据来源，`wire/pcap` = 实时抓包（区别于离线读取 pcap 回放） |
+
+**网络五元组**
+
+| 字段 | 含义 |
+|---|---|
+| `src_ip` / `src_port` | 源地址：`192.168.56.3:51760`（发起方） |
+| `dest_ip` / `dest_port` | 目的地址：`192.168.56.2:8080`（被探测方） |
+| `proto` | 协议：TCP |
+| `ip_v` | IP 版本：4 |
+| `direction` | 流方向：`to_server` = 客户端发往服务端 |
+
+**alert 对象**
+
+| 字段 | 含义 |
+|---|---|
+| `action` | 处置动作：`allowed` = 放行且仅告警（IDS 模式默认；若 IPS drop 模式会显示 `drop`/`reject`） |
+| `gid` | 规则组 ID，`1` = Emerging Threats 规则集 |
+| `signature_id` | 规则编号，`1000007`（ET 规则：HTTP-Alt 端口探测） |
+| `rev` | 规则修订版本号 |
+| `signature` | 规则描述：**ET SCAN Port Scan - HTTP-Alt probe**（端口扫描特征——对常见 HTTP 备用端口 8080 的探测） |
+| `category` | 攻击类别：`Attempted Information Leak`（尝试信息泄露） |
+| `severity` | 严重级别 1~3：`2` = 中危（1 高 / 2 中 / 3 低） |
+
+**flow 对象**
+
+| 字段 | 含义 |
+|---|---|
+| `pkts_toserver` / `pkts_toclient` | 已见到的上行/下行包数：`1 / 0` |
+| `bytes_toserver` / `bytes_toclient` | 对应字节数：`74 / 0` |
+| `start` | 流开始时间 |
+| 后面的 src/dest 字段 | 重复的五元组，方便单独看流对象 |
+
+**stream**
+
+`stream: 0` 表示这条告警**不关联到流重组上下文**——即不是针对载荷内容（如基于流内容的检测），而是纯粹根据报文特征（扫描探测）触发的，没有流级状态可绑定。
+
 ---
 
 ## NIDS vs WAF 互补
