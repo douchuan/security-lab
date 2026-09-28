@@ -16,19 +16,35 @@ WAF + NIDS 都已部署。但如果攻击者已经进了主机呢？
 
 ---
 
-## 场景：Uber 文件篡改事件
+## 完整性
 
-> **2016 年，攻击者获得 AWS 凭证后修改内部系统文件，窃取 5700 万用户信息。Uber 支付赎金试图掩盖——最终被罚 1.48 亿美元。**
+- secure boot, tpm
+- ubuntu iso
+  - https://cdimage.ubuntu.com/ubuntu/releases/24.04.5/release/
+- linux IMA (Integrity Measurement Architecture)
+- linux kernel
 
-你仍然担心：
 
-- **如果攻击者已经进来了呢？**
-- 他们在服务器上修改文件：植入后门、修改配置、删除日志
-- **网络层检测看不到主机内部发生了什么**
+### linux kernle 验签演示
 
-你需要一双**在主机内部的眼睛**。
+todo:
+- 公钥验签的基本原理 
+- gpg 介绍
 
----
+```bash
+
+# import keys belonging to Linus Torvalds and Greg Kroah-Hartman
+gpg --locate-keys torvalds@kernel.org gregkh@kernel.org
+
+# list imported keys
+gpg -k
+
+# download kernel source
+# https://www.kernel.org/
+
+unxz linux-7.2.8.tar.xz
+gpg --verify linux-7.2.8.tar.sign
+```
 
 ## 新架构：HIDS 上线
 
