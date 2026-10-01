@@ -1,32 +1,11 @@
 
 networks:
-  dmz-net:
-    driver: bridge
   app-net:
-    driver: bridge
-    internal: true
-  monitor-net:
     driver: bridge
   hids-net:
     driver: bridge
 
 services:
-  # WAF: Nginx + ModSecurity
-  nginx-modsecurity:
-    image: owasp/modsecurity-crs:nginx
-    container_name: nginx-modsecurity
-    networks:
-      - dmz-net
-      - app-net
-    ports:
-      - "80:8080"
-    environment:
-      - BACKEND=http://juice-shop:3000
-      - MODSEC_RULE_ENGINE=On
-    depends_on:
-      - juice-shop
-    restart: unless-stopped
-
   # 后端应用 (distroless 镜像，无 shell/curl/wget)
   juice-shop:
     image: bkimminich/juice-shop:latest
@@ -38,24 +17,6 @@ services:
       - "3000"
     volumes:
       - juice-shop-data:/app
-    restart: unless-stopped
-
-  # NIDS: Suricata
-  suricata:
-    image: jasonish/suricata:latest
-    container_name: suricata
-    networks:
-      - monitor-net
-      - app-net
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    volumes:
-      - ../lesson-03/configs/suricata.yaml:/etc/suricata/suricata.yaml:ro
-      - suricata-log:/var/log/suricata
-    command: >
-      -c /etc/suricata/suricata.yaml
-      -i eth1
     restart: unless-stopped
 
   # HIDS: Wazuh Agent (模拟 — 监控 Juice Shop 容器)
@@ -71,5 +32,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  suricata-log:
   juice-shop-data:

@@ -8,7 +8,7 @@
 
 ## 🎯 CISO 任务简报
 
-你是 CISO。WAF 和 NIDS 都已部署，但你仍然夜不能寐：
+你是 CISO。WAF 和 NIDS 已在前面的课程中部署，但你仍然夜不能寐：
 
 > **如果你的某个服务器已经被攻破了呢？**
 >
@@ -51,7 +51,7 @@
 
 ## 🛠️ 动手实验
 
-### 启动环境（WAF + NIDS + HIDS）
+### 启动环境（Juice Shop + HIDS）
 
 ```bash
 docker compose up -d
@@ -106,8 +106,6 @@ docker compose logs --tail=30 wazuh-agent
 
 | 检查项 | 状态 | 备注 |
 |--------|------|------|
-| WAF 运行中 | ✅ | 保护 HTTP 层 |
-| NIDS 运行中 | ✅ | 监控网络流量 |
 | HIDS 运行中 | ✅ | Wazuh Agent 监控主机 |
 | 文件篡改检测 | 🛡️ | FIM 告警 |
 | 日志集中分析 | ❌ | 所有日志分散在各处 |

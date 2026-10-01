@@ -18,6 +18,10 @@ WAF + NIDS 都已部署。但如果攻击者已经进了主机呢？
 
 ## 完整性
 
+Bootkit & RootKit, 微软推动 secureboot & tpm
+
+盗版盛行
+
 - secure boot, tpm
 - ubuntu iso
   - https://cdimage.ubuntu.com/ubuntu/releases/24.04.5/release/
