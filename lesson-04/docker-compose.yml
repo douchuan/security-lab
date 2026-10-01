@@ -12,23 +12,24 @@ services:
     container_name: juice-shop
     networks:
       - app-net
-      - hids-net
     expose:
       - "3000"
     volumes:
       - juice-shop-data:/app
     restart: unless-stopped
 
-  # HIDS: Wazuh Agent (模拟 — 监控 Juice Shop 容器)
+  # HIDS: Wazuh Agent (监控 Juice Shop 容器的文件系统与进程)
   wazuh-agent:
     image: wazuh/wazuh-agent:4.9.0
     container_name: wazuh-agent
     networks:
       - hids-net
     volumes:
+      - juice-shop-data:/monitored/juice-shop:ro
       - ./configs/ossec.conf:/var/ossec/etc/ossec.conf:ro
     environment:
       - WAZUH_MANAGER=wazuh-agent
+    pid: "host"
     restart: unless-stopped
 
 volumes:

