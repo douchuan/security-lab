@@ -218,3 +218,16 @@ WAF 日志、Suricata 日志、Wazuh Agent 日志、应用访问日志……
 **攻击者同时触发了多个组件的告警，但你无法把它们关联起来。**
 
 下一课部署 **SIEM，将所有日志集中到一个平台进行关联分析。**
+
+---
+
+## 参考资料
+
+| 文档 | 链接 |
+|------|------|
+| Wazuh FIM 官方文档 | https://documentation.wazuh.com/current/user-manual/capabilities/file-integrity/index.html |
+| FIM 配置指南 | https://documentation.wazuh.com/current/user-manual/reference/ossec-conf/syscheck.html |
+| FIM 告警 Rule ID | https://documentation.wazuh.com/current/rule-reference/ruleset-fim.html |
+| Wazuh Agent 安装 | https://documentation.wazuh.com/current/installation-guide/wazuh-agent.html |
+| Wazuh 架构 | https://documentation.wazuh.com/current/getting-started/architecture.html |
+
