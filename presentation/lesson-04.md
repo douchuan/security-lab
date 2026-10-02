@@ -112,7 +112,7 @@ docker exec juice-shop touch /tmp/.hidden_backdoor
 
 ## 关键概念：FIM
 
-> **文件完整性监控 (File Integrity Monitoring)** — 持续监控关键文件和目录的变化。
+> **FIM (File Integrity Monitoring)** — 文件完整性监控，持续监控关键文件和目录的变化。
 
 **工作原理：**
 ```
@@ -125,6 +125,18 @@ docker exec juice-shop touch /tmp/.hidden_backdoor
 - `/etc/crontab` — 定时任务
 - Web 根目录 — WebShell 植入
 - 系统二进制文件 — Rootkit 替换
+
+**Wazuh Agent 告警类型：**
+
+| 来源 | Rule | 含义 |
+|------|------|------|
+| syscheck (FIM) | 550 | 文件校验和变化 |
+| syscheck (FIM) | 553 | 文件被删除 |
+| syscheck (FIM) | 554 | 新增文件 |
+| SCA | 19007-19009 | CIS 安全基线合规检查 |
+| ossec | 501/502 | Agent 上下线、Manager 启动 |
+
+> FIM 就是 syscheck——同一个模块的两个名字。`grep 'syscheck'` 即可筛选出所有文件完整性告警。
 
 > FIM 只检测和告警，不阻止。阻止需要访问控制或不可变文件系统。
 
