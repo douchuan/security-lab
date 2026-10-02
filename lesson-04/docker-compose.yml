@@ -26,7 +26,7 @@ services:
       - hids-net
     volumes:
       - juice-shop-data:/monitored/juice-shop
-      - ./configs/ossec.conf:/var/ossec/etc/ossec.conf
+      - ./configs/ossec.conf:/wazuh-config-mount/etc/ossec.conf
     environment:
       - WAZUH_MANAGER=wazuh-agent
     restart: unless-stopped
