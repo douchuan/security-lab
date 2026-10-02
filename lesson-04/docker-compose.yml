@@ -18,15 +18,15 @@ services:
       - juice-shop-data:/app
     restart: unless-stopped
 
-  # HIDS: Wazuh Agent (通过共享卷只读监控 Juice Shop 文件完整性)
+  # HIDS: Wazuh Agent (通过共享卷监控 Juice Shop 文件完整性)
   wazuh-agent:
-    image: wazuh/wazuh-agent:4.9.0
+    image: wazuh/wazuh-agent:4.14.8
     container_name: wazuh-agent
     networks:
       - hids-net
     volumes:
-      - juice-shop-data:/monitored/juice-shop:ro
-      - ./configs/ossec.conf:/var/ossec/etc/ossec.conf:ro
+      - juice-shop-data:/monitored/juice-shop
+      - ./configs/ossec.conf:/var/ossec/etc/ossec.conf
     environment:
       - WAZUH_MANAGER=wazuh-agent
     restart: unless-stopped
