@@ -102,32 +102,9 @@ echo ""
 echo "[Step 6] 查看 Wazuh Manager FIM 告警..."
 echo "  等待告警从 Agent 同步到 Manager..."
 sleep 5
-echo "  最近的 FIM 相关告警（Rule 550-558）:"
+echo "  最近的 FIM 相关告警:"
 echo ""
-docker exec wazuh-manager sh -c "grep 'syscheck' /var/ossec/logs/alerts/alerts.json 2>/dev/null | tail -3" | python3 -c "
-import sys, json
-found = False
-for line in sys.stdin:
-    try:
-        alert = json.loads(line.strip())
-        rule_id = int(alert.get('rule', {}).get('id', 0))
-        if 550 <= rule_id <= 558:
-            found = True
-            ts = alert.get('timestamp', '')
-            desc = alert.get('rule', {}).get('description', '')
-            full_log = alert.get('full_log', '')
-            print(f'  [{ts}] Rule {rule_id}: {desc}')
-            if full_log:
-                for log_line in full_log.split(chr(10)):
-                    log_line = log_line.strip()
-                    if log_line:
-                        print(f'    {log_line}')
-                print()
-    except Exception:
-        pass
-if not found:
-    print('  (无 FIM 告警 — Agent 可能仍在初始化，请稍后重试)')
-" 2>/dev/null || echo "  (无法读取告警 — Manager 可能未就绪)"
+docker exec wazuh-manager sh -c "grep 'syscheck' /var/ossec/logs/alerts/alerts.json 2>/dev/null | tail -3" || echo "  (无 FIM 告警 — Agent 可能仍在初始化，请稍后重试)"
 echo ""
 
 # 7. 验证文件
