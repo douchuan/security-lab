@@ -130,6 +130,28 @@ docker exec juice-shop touch /tmp/.hidden_backdoor
 
 ---
 
+## FIM 工作原理
+
+**两轮扫描，一次 Diff：**
+
+```
+第 1 轮（基线）              第 2 轮（对比）
+遍历监控目录 ───────→ 建立基线 ───────→ 再次遍历
+                       ↓                  ↓
+               记录每个文件的：       与基线逐条对比：
+               • MD5/SHA256          • 文件不在基线 → 新增 (Rule 554)
+               • 权限/UID/GID         • hash 变了     → 修改 (Rule 550)
+               • inode/mtime          • 基线文件消失 → 删除 (Rule 553)
+               ↓                  ↓
+               无告警（仅建库）      发现差异 → 生成告警 → 发送至 Manager
+```
+
+**关键要点：**
+
+> 篡改必须发生在基线建立**之后**，才能被检测为"变化"。如果篡改与基线扫描同时进行，文件会被当作正常状态收录，不会产生告警。
+
+---
+
 ## NIDS vs HIDS
 
 | 维度 | NIDS (Suricata) | HIDS (Wazuh Agent) |
@@ -150,14 +172,12 @@ docker exec juice-shop touch /tmp/.hidden_backdoor
 cd lesson-04
 docker compose up -d
 
-# 运行攻击演示
+# 运行攻击演示（自动等待基线 → 篡改 → 检测）
 bash attack.sh
 
-# 手动文件篡改
-docker exec juice-shop touch /tmp/.hidden_backdoor
-
-# 查看检测
-docker compose logs --tail=30 wazuh-agent
+# 手动查看 Manager 端 FIM 告警
+docker exec wazuh-manager sh -c \
+  "grep 'syscheck' /var/ossec/logs/alerts/alerts.json | tail -5"
 ```
 
 ---
