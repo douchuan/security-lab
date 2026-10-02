@@ -15,7 +15,19 @@ services:
     expose:
       - "3000"
     volumes:
-      - juice-shop-data:/app
+      - juice-shop-data:/juice-shop
+    restart: unless-stopped
+
+  # SIEM: Wazuh Manager (本课不讲解，仅为 Agent 提供注册和日志聚合)
+  # 注意：完整 SIEM 功能在 lesson-06 中演示
+  wazuh-manager:
+    image: wazuh/wazuh-manager:4.14.8
+    container_name: wazuh-manager
+    networks:
+      - hids-net
+    ports:
+      - "1514:1514"
+      - "1515:1515"
     restart: unless-stopped
 
   # HIDS: Wazuh Agent (通过共享卷监控 Juice Shop 文件完整性)
@@ -28,7 +40,9 @@ services:
       - juice-shop-data:/monitored/juice-shop
       - ./configs/ossec.conf:/wazuh-config-mount/etc/ossec.conf
     environment:
-      - WAZUH_MANAGER=wazuh-agent
+      - WAZUH_MANAGER=wazuh-manager
+    depends_on:
+      - wazuh-manager
     restart: unless-stopped
 
 volumes:
