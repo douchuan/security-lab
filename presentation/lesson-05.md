@@ -146,6 +146,35 @@ IF count(status==401, src_ip, 5min) > 20 THEN severity = High
 
 ---
 
+## 关键问题：SIEM 不会自动读懂你的日志
+
+> **Wazuh 不认识 Juice Shop 的日志，也不认识你的应用日志。** 它必须经过配置才能解析每个日志源。
+
+**我们当前的日志源：**
+
+| 组件 | 日志格式 | Wazuh 内置 Decoder | 需要额外工作 |
+|------|---------|-------------------|-------------|
+| WAF (ModSecurity) | syslog | ✅ 内置 | 配置传输 |
+| NIDS (Suricata) | JSON (eve.json) | ✅ 内置 | 配置传输 |
+| HIDS (Wazuh Agent) | 内部格式 | ✅ 内置 | 无 |
+| **Juice Shop** | 自定义 JSON | ❌ **无** | **写 decoder + 写 rule + 配传输** |
+
+**三步缺一不可：**
+
+```
+传输 (Transport) → 解码 (Decoder) → 告警 (Rule)
+      ↓                  ↓                ↓
+  日志到达 Manager   解析成结构化字段   定义什么算攻击
+```
+
+**没有 Decoder = 日志进了 SIEM 也只是"存在那里"，不会被分析、不会被关联、不会产生告警。**
+
+**这就是 SIEM 和简单日志收集器的区别：**
+- 日志收集器（如 Filebeat）：只管搬运，把日志从 A 送到 B
+- SIEM（Wazuh Manager）：搬过来之后，你必须告诉它**怎么读**、**什么是异常**
+
+---
+
 ## 动手验证
 
 ```bash

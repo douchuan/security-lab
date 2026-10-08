@@ -62,7 +62,7 @@ services:
 
   # HIDS: Wazuh Agent
   wazuh-agent:
-    image: wazuh/wazuh-agent:4.9.0
+    image: wazuh/wazuh-agent:4.14.8
     container_name: wazuh-agent
     networks:
       - hids-net
@@ -78,7 +78,7 @@ services:
 
   # SIEM: Wazuh Manager
   wazuh-manager:
-    image: wazuh/wazuh-manager:4.9.0
+    image: wazuh/wazuh-manager:4.14.8
     container_name: wazuh-manager
     networks:
       - siem-net
