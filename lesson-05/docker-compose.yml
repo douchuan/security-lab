@@ -54,7 +54,7 @@ services:
       - NET_ADMIN
       - NET_RAW
     volumes:
-      - ../lesson-03/configs/suricata.yaml:/etc/suricata/suricata.yaml:ro
+      - ./configs/suricata.yaml:/etc/suricata/suricata.yaml:ro
       - suricata-log:/var/log/suricata
     command: >
       -c /etc/suricata/suricata.yaml
@@ -73,7 +73,7 @@ services:
       - juice-shop-logs:/monitored/juice-shop/logs:ro        # Juice Shop access log
       - suricata-log:/monitored/suricata:ro                  # Suricata eve.json
       # Agent 配置
-      - ../lesson-04/configs/ossec.conf:/var/ossec/etc/ossec.conf:ro
+      - ./configs/ossec.conf:/var/ossec/etc/ossec.conf:ro
     environment:
       - WAZUH_MANAGER=wazuh-manager
     depends_on:
