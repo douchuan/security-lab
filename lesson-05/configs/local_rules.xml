@@ -1,29 +1,53 @@
 <!-- Wazuh Manager 本地规则 -->
-<!-- 暴力破解检测规则 -->
+<!-- 暴力破解检测 + Suricata 告警 -->
 
-<group name="local,web,authentication,bruteforce,">
+<group name="local,">
+
+  <!-- ==================== Juice Shop 暴力破解检测 ==================== -->
+  <!-- 基于自定义 decoder 解析后的字段：url, http_status, srcip -->
 
   <!-- 规则 100001: 检测到失败的登录尝试 -->
   <rule id="100001" level="3">
-    <decoded_as>json</decoded_as>
-    <field name="message">Failed login attempt</field>
-    <description>Failed login attempt detected from $(data.srcip)</description>
+    <decoded_as>juice-shop</decoded_as>
+    <field name="url">/api/users/login</field>
+    <field name="http_status">401</field>
+    <description>Failed login attempt from $(srcip)</description>
   </rule>
 
   <!-- 规则 100002: 暴力破解 — 短时间大量失败登录 -->
   <rule id="100002" level="10" frequency="8" timeframe="120">
     <if_matched_sid>100001</if_matched_sid>
     <same_source_ip />
-    <description>Brute force attack detected — multiple failed login attempts from $(data.srcip)</description>
+    <description>Brute force attack detected — multiple failed logins from $(srcip)</description>
     <group>bruteforce,authentication,</group>
   </rule>
 
   <!-- 规则 100003: 暴力破解成功（失败后突然成功） -->
   <rule id="100003" level="12">
     <if_matched_sid>100002</if_matched_sid>
-    <field name="message">Successful login</field>
-    <description>Possible successful brute force attack from $(data.srcip)</description>
+    <field name="url">/api/users/login</field>
+    <field name="http_status">200</field>
+    <description>Possible successful brute force attack from $(srcip)</description>
     <group>bruteforce,authentication,high_severity,</group>
+  </rule>
+
+  <!-- ==================== Suricata NIDS 告警 ==================== -->
+  <!-- Wazuh 内置 suricata decoder 解析 eve.json -->
+
+  <!-- 规则 100010: Suricata 检测到攻击行为 -->
+  <rule id="100010" level="7">
+    <if_sid>86601</if_sid>
+    <field name="event_type">alert</field>
+    <description>Suricata alert: $(data.alert.signature)</description>
+    <group>ids,suricata,</group>
+  </rule>
+
+  <!-- 规则 100011: Suricata 检测到端口扫描 -->
+  <rule id="100011" level="8">
+    <if_sid>100010</if_sid>
+    <field name="data.alert.category">Attempted Information Leak</field>
+    <description>Suricata detected port scan from $(srcip)</description>
+    <group>ids,suricata,reconnaissance,</group>
   </rule>
 
 </group>

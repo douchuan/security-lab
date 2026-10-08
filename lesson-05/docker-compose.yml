@@ -39,7 +39,8 @@ services:
     expose:
       - "3000"
     volumes:
-      - juice-shop-data:/app
+      - juice-shop-data:/app/data
+      - juice-shop-logs:/app/logs
     restart: unless-stopped
 
   # NIDS: Suricata
@@ -68,6 +69,10 @@ services:
       - hids-net
       - siem-net
     volumes:
+      # 日志收集：各组件日志通过 volume 挂载给 Agent
+      - juice-shop-logs:/monitored/juice-shop/logs:ro        # Juice Shop access log
+      - suricata-log:/monitored/suricata:ro                  # Suricata eve.json
+      # Agent 配置
       - ../lesson-04/configs/ossec.conf:/var/ossec/etc/ossec.conf:ro
     environment:
       - WAZUH_MANAGER=wazuh-manager
@@ -87,15 +92,13 @@ services:
       - "1515:1515"
       - "55000:55000"
     volumes:
+      # 自定义规则 & decoder
       - ./configs/local_rules.xml:/var/ossec/etc/rules/local_rules.xml:ro
+      - ./configs/decoders:/var/ossec/etc/decoders/juice-shop:ro
+      # 持久化数据
       - wazuh-api-etc:/var/ossec/api/configuration
       - wazuh-manager-etc:/var/ossec/etc
       - wazuh-manager-var:/var/ossec
-    environment:
-      - INDEXER_URL=https://wazuh-indexer:9200
-      - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=SecretPassword
-      - FILEBEAT_SSL_VERIFICATION_MODE=none
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:55000 || exit 1"]
       interval: 30s
@@ -107,6 +110,7 @@ services:
 volumes:
   suricata-log:
   juice-shop-data:
+  juice-shop-logs:
   wazuh-api-etc:
   wazuh-manager-etc:
   wazuh-manager-var:

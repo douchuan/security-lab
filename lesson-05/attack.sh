@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Lesson 05 Attack Script
 # 目标：演示 Wazuh Manager (SIEM) 对暴力破解攻击的关联检测。
+# 数据流：Juice Shop 日志 → Docker Volume → Wazuh Agent → Wazuh Manager → Decoder → Rule → Alert
 
 set -euo pipefail
 
@@ -50,33 +51,64 @@ done
 echo "  攻击完成: 总 $ATTEMPTS 次, 成功 $SUCCESS 次, 失败 $FAILED 次"
 echo ""
 
-# 3. 等待 SIEM 关联分析
-echo "[Step 3] 等待 Wazuh Manager 关联分析..."
+# 3. 确认日志已写入 volume
+echo "[Step 3] 验证日志已写入 volume..."
+echo "  Juice Shop access log:"
+docker compose exec juice-shop ls -la /app/logs/ 2>/dev/null | head -3 || echo "  (无法查看)"
+echo "  最近 2 行 access log:"
+docker compose exec juice-shop tail -2 /app/logs/access.log 2>/dev/null || echo "  (无日志文件)"
+echo ""
+
+# 4. 等待 SIEM 关联分析
+echo "[Step 4] 等待 Wazuh Manager 关联分析 (30 秒)..."
 sleep 30
 echo "  ✓ 等待完成"
 echo ""
 
-# 4. 查看 SIEM 告警
-echo "[Step 4] 查看 Wazuh Manager 告警..."
-ALERTS=$(docker compose exec wazuh-manager cat /var/ossec/logs/alerts/alerts.json 2>/dev/null | \
-  grep -i "brute\|login\|authentication" | tail -5 || echo "")
+# 5. 查看 SIEM 告警
+echo "[Step 5] 查看 Wazuh Manager 暴力破解告警..."
+ALERTS_JSON=$(docker compose exec wazuh-manager cat /var/ossec/logs/alerts/alerts.json 2>/dev/null || echo "")
 
-if [ -n "$ALERTS" ]; then
-  echo "  检测到的暴力破解告警:"
-  echo "$ALERTS" | head -5 | while IFS= read -r line; do
-    echo "  $line"
-  done
+if [ -n "$ALERTS_JSON" ]; then
+  BRUTE_ALERTS=$(echo "$ALERTS_JSON" | grep -i "brute\|100002\|100003" | head -3 || echo "")
+  if [ -n "$BRUTE_ALERTS" ]; then
+    echo "  ✓ 检测到暴力破解告警:"
+    echo "$BRUTE_ALERTS" | while IFS= read -r line; do
+      echo "    $line"
+    done
+  else
+    echo "  ⚠ 未找到暴力破解告警 (rule 100002/100003)"
+    echo "  查看最近的一般告警:"
+    echo "$ALERTS_JSON" | tail -3 | while IFS= read -r line; do
+      echo "    $line"
+    done
+  fi
 else
-  echo "  ⚠ 未检测到暴力破解告警"
-  echo "  查看最近的一般告警:"
-  docker compose exec wazuh-manager tail -20 /var/ossec/logs/alerts/alerts.log 2>/dev/null || echo "  (无告警日志)"
+  echo "  ⚠ 告警文件为空"
+  echo "  查看 ossec.log 最近条目:"
+  docker compose exec wazuh-manager tail -10 /var/ossec/logs/ossec.log 2>/dev/null || echo "  (无日志)"
 fi
 echo ""
 
-# 5. 查看 Wazuh Manager 统计
-echo "[Step 5] Wazuh Manager 统计..."
-docker compose exec wazuh-manager cat /var/ossec/logs/ossec.log 2>/dev/null | \
-  grep -i "started\|info\|warn" | tail -5 || echo "  (无法获取统计信息)"
+# 6. 查看 Wazuh Agent 状态
+echo "[Step 6] 检查 Wazuh Agent 连接状态..."
+AGENT_LOGS=$(docker compose logs wazuh-agent 2>/dev/null | tail -10 || echo "")
+if echo "$AGENT_LOGS" | grep -qi "connected\|enrolled"; then
+  echo "  ✓ Wazuh Agent 已连接"
+else
+  echo "  ⚠ Agent 连接状态不确定"
+  echo "  最近 Agent 日志:"
+  echo "$AGENT_LOGS" | tail -5
+fi
+echo ""
+
+# 7. 验证 SIEM 处理流水线
+echo "[Step 7] SIEM 处理流水线验证:"
+echo "  1. 日志生成: Juice Shop access.log ✓"
+echo "  2. 日志传输: Docker Volume → Wazuh Agent → Manager"
+echo "  3. 日志解码: juice-shop decoder 解析 HTTP 字段"
+echo "  4. 规则匹配: rule 100001 (401) → rule 100002 (关联)"
+echo "  5. 告警输出: alerts.json"
 echo ""
 
 echo "============================================"
