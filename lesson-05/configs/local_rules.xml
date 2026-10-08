@@ -1,5 +1,5 @@
 <!-- Wazuh Manager 本地规则 -->
-<!-- 暴力破解检测 + Suricata 告警 -->
+<!-- 暴力破解 + Suricata + ModSecurity 三层检测 -->
 
 <group name="local,">
 
@@ -48,6 +48,32 @@
     <field name="data.alert.category">Attempted Information Leak</field>
     <description>Suricata detected port scan from $(srcip)</description>
     <group>ids,suricata,reconnaissance,</group>
+  </rule>
+
+  <!-- ==================== ModSecurity WAF 告警 ==================== -->
+  <!-- Wazuh 内置 modsecurity decoder 解析审计日志 -->
+
+  <!-- 规则 100020: ModSecurity 检测到 Web 攻击 -->
+  <rule id="100020" level="7">
+    <decoded_as>modsecurity</decoded_as>
+    <description>ModSecurity alert: $(message)</description>
+    <group>web_attack,waf,</group>
+  </rule>
+
+  <!-- 规则 100021: ModSecurity 检测到 SQL 注入 -->
+  <rule id="100021" level="10">
+    <if_sid>100020</if_sid>
+    <match>SQL Injection</match>
+    <description>ModSecurity blocked SQL injection from $(srcip)</description>
+    <group>web_attack,waf,sqli,high_severity,</group>
+  </rule>
+
+  <!-- 规则 100022: ModSecurity 检测到 XSS -->
+  <rule id="100022" level="9">
+    <if_sid>100020</if_sid>
+    <match>XSS</match>
+    <description>ModSecurity blocked XSS attempt from $(srcip)</description>
+    <group>web_attack,waf,xss,high_severity,</group>
   </rule>
 
 </group>
