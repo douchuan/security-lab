@@ -23,6 +23,8 @@ services:
       - MODSEC_RULE_ENGINE=On
       - MODSEC_AUDIT_LOG=/var/log/modsecurity/audit.log
       - MODSEC_AUDIT_ENGINE=On
+      # 所有审计日志写入单个文件，便于 Wazuh Agent 行式收集；
+      # 生产环境通常选 Concurrent（每条一个独立文件），搭配 Filebeat/Fluentd 递归监控目录下新文件
       - MODSEC_AUDIT_LOG_TYPE=Serial
     volumes:
       - modsec-log:/var/log/modsecurity
@@ -76,7 +78,6 @@ services:
     volumes:
       # 自定义规则 & decoder
       - ./configs/local_rules.xml:/var/ossec/etc/rules/local_rules.xml:ro
-      - ./configs/decoders/juice-shop-decoder.xml:/var/ossec/etc/decoders/juiceshop-decoder.xml:ro
       - ./configs/decoders/modsec-decoder.xml:/var/ossec/etc/decoders/modsec-decoder.xml:ro
       # 持久化数据
       - wazuh-api-etc:/var/ossec/api/configuration

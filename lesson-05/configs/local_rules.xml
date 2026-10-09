@@ -4,8 +4,8 @@
 <group name="local,">
 
   <!-- ==================== Juice Shop 暴力破解检测 ==================== -->
-  <!-- Juice Shop 日志被 Wazuh 内置 web-accesslog decoder 解析 -->
-  <!-- full_log 示例: 172.67.157.37 - - [09/Oct/2026:00:27:53 +0000] "POST /api/users/login HTTP/1.1" 500 - "-" "curl/8.7.1" -->
+  <!-- Juice Shop access log 为 Morgan combined 格式，与 Apache/Nginx 标准格式一致 -->
+  <!-- Wazuh 内置 web-accesslog decoder 自动解析，提取 srcip/url/status 字段 -->
 
   <!-- 规则 100001: 检测到失败的登录尝试 -->
   <rule id="100001" level="3">
