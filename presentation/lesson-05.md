@@ -175,6 +175,46 @@ IF count(status==401, src_ip, 5min) > 20 THEN severity = High
 
 ---
 
+## 深度思考：日志格式变了怎么办？
+
+一个自然的担忧：如果 ModSecurity 改了日志格式、Juice Shop 换了输出方式，Wazuh 的 Decoder 不就失效了吗？
+
+**答案是：会失效。但生态通过以下机制保持稳定：**
+
+### 1. 标准化格式是行业共识
+
+- Apache/Nginx **combined log format** 是 20 多年前的标准，几乎所有 Web 服务器都遵循
+- ModSecurity JSON audit log、Suricata eve.json 由项目定义，版本迭代时保持向后兼容
+- CEF、LEEF、Syslog RFC 5424 是安全设备通用的交换格式
+
+这些格式之所以稳定，是因为**下游生态（SIEM、日志分析、审计工具）都依赖它们**。一旦改了，下游全断——所以上游软件项目会极力避免 Breaking Change。
+
+### 2. Decoder 层做解耦——格式变了只改 Decoder
+
+```
+原始日志 → Decoder（解析为结构化字段） → Rule Engine（基于字段匹配） → Alert
+```
+
+如果上游改了日志格式：
+- **只需要更新对应的 Decoder**（正则或 JSON 字段映射）
+- **Rule 层不需要改**（因为规则基于的是结构化后的字段名，不是原始文本）
+- 这就是解耦的价值
+
+### 3. 自定义日志的处理方式
+
+如果你的应用输出了完全自定义的日志格式：
+- 写一个**自定义 decoder**（就像我们对 ModSecurity 做的那样）
+- 在应用层改用标准格式输出（改配置）
+- 用 Fluentd/Logstash 做中间转换，把非标日志转为标准格式再喂给 SIEM
+
+### 4. 真实企业的做法
+
+大厂有专门的 **Log Engineering 团队**，维护内部日志规范 + Fluentd/Vector 统一转发。中小公司用社区现成的 Decoder，上游升级时跟着改配置文件。
+
+**核心就是：SIEM 不假设日志格式永远不变，而是通过 Decoder 这一层做抽象隔离。格式变了就换 Decoder，Rule 不变。**
+
+---
+
 ## 动手验证
 
 ```bash
