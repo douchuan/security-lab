@@ -1,9 +1,7 @@
 <!-- Juice Shop 自定义 Decoder -->
 <!-- 解析 Morgan combined 格式的 access log -->
-<!-- 示例: 192.168.1.1 - - [10/Oct/2026:10:00:00 +0000] "POST /api/users/login HTTP/1.1" 401 123 "-" "axios/1.6.0" -->
+<!-- 示例: 192.168.1.1 - - [10/Oct/2026:10:00:00 +0000] "POST /api/users/login HTTP/1.1" 401 123 "-" "curl/7.88" -->
 
-<decoder name="juice-shop">
-  <prematch>^\d+\.\d+\.\d+\.\d+\s</prematch>
-  <regex>^(\S+) \S+ \S+ \[\S+ \S+\] "(\S+) (\S+) \S+" (\d+) (\S+) "(\S+)" "(\S+)"$</regex>
-  <order>srcip,ignored,http_method,url,http_status,http_size,http_referrer,http_agent</order>
+<decoder name="juiceshop">
+  <prematch>^(\d+\.\d+\.\d+\.\d+) </prematch>
 </decoder>

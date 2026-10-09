@@ -1,17 +1,18 @@
 <!-- Wazuh Manager 本地规则 -->
-<!-- 暴力破解 (Juice Shop) + WAF 拦截 (ModSecurity) 两层检测 -->
+<!-- 暴力破解 (Juice Shop) 检测 -->
+<!-- Juice Shop 日志被 Wazuh 内置 web-accesslog decoder 解析 -->
 
 <group name="local,">
 
   <!-- ==================== Juice Shop 暴力破解检测 ==================== -->
-  <!-- 基于自定义 decoder 解析后的字段：url, http_status, srcip -->
+  <!-- web-accesslog decoder 解析后: srcip, protocol, id(HTTP 状态码), url -->
+  <!-- full_log 示例: 172.67.157.37 - - [09/Oct/2026:00:27:53 +0000] "POST /api/users/login HTTP/1.1" 500 - "-" "curl/8.7.1" -->
 
   <!-- 规则 100001: 检测到失败的登录尝试 -->
   <rule id="100001" level="3">
-    <decoded_as>juice-shop</decoded_as>
-    <field name="url">/api/users/login</field>
-    <field name="http_status">401</field>
-    <description>Failed login attempt from $(srcip)</description>
+    <if_sid>31122</if_sid>
+    <match>/api/users/login</match>
+    <description>Failed login attempt on Juice Shop from $(srcip)</description>
   </rule>
 
   <!-- 规则 100002: 暴力破解 — 短时间大量失败登录 -->
@@ -22,39 +23,12 @@
     <group>bruteforce,authentication,</group>
   </rule>
 
-  <!-- 规则 100003: 暴力破解成功（失败后突然成功） -->
+  <!-- 规则 100003: 暴力破解成功（失败后突然 200） -->
   <rule id="100003" level="12">
-    <if_matched_sid>100002</if_matched_sid>
-    <field name="url">/api/users/login</field>
-    <field name="http_status">200</field>
-    <description>Possible successful brute force attack from $(srcip)</description>
+    <if_sid>31150</if_sid>
+    <match>/api/users/login</match>
+    <description>Possible successful brute force attack on Juice Shop from $(srcip)</description>
     <group>bruteforce,authentication,high_severity,</group>
-  </rule>
-
-  <!-- ==================== ModSecurity WAF 告警 ==================== -->
-  <!-- Wazuh 内置 modsecurity decoder 解析审计日志 -->
-
-  <!-- 规则 100020: ModSecurity 检测到 Web 攻击 -->
-  <rule id="100020" level="7">
-    <decoded_as>modsecurity</decoded_as>
-    <description>ModSecurity alert: $(message)</description>
-    <group>web_attack,waf,</group>
-  </rule>
-
-  <!-- 规则 100021: ModSecurity 检测到 SQL 注入 -->
-  <rule id="100021" level="10">
-    <if_sid>100020</if_sid>
-    <match>SQL Injection</match>
-    <description>ModSecurity blocked SQL injection from $(srcip)</description>
-    <group>web_attack,waf,sqli,high_severity,</group>
-  </rule>
-
-  <!-- 规则 100022: ModSecurity 检测到 XSS -->
-  <rule id="100022" level="9">
-    <if_sid>100020</if_sid>
-    <match>XSS</match>
-    <description>ModSecurity blocked XSS attempt from $(srcip)</description>
-    <group>web_attack,waf,xss,high_severity,</group>
   </rule>
 
 </group>
