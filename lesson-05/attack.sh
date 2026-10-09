@@ -31,17 +31,17 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 
 SQL_PAYLOADS=(
-  "' OR '1'='1"
-  "' UNION SELECT NULL--"
-  "admin'--"
-  "'; DROP TABLE users--"
-  "' OR 1=1; SELECT * FROM users--"
+  "' OR '1'='1"                    # 布尔注入：构造永真条件，绕过认证
+  "' UNION SELECT NULL--"          # UNION 注入：联合查询探测数据库结构
+  "admin'--"                       # 注释截断：-- 后面内容被忽略，直接以 admin 身份登录
+  "'; DROP TABLE users--"          # 破坏性注入：删除 users 表（实际被 ModSecurity 拦截）
+  "' OR 1=1; SELECT * FROM users--" # 复合注入：永真条件 + 数据窃取
 )
 
 for i in "${!SQL_PAYLOADS[@]}"; do
   PAYLOAD="${SQL_PAYLOADS[$i]}"
   HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-    "$JUICE_SHOP_URL/api/users/login" \
+    "$JUICE_SHOP_URL/rest/user/login" \
     -H "Content-Type: application/json" \
     -d "{\"email\":\"${PAYLOAD}\",\"password\":\"test\"}" 2>/dev/null || echo "000")
   echo "  [$((i+1))/5] SQL 注入尝试 → HTTP $HTTP_CODE"
@@ -65,7 +65,7 @@ SUCCESS=0
 FAILED=0
 
 for i in $(seq 1 60); do
-  HTTP_CODE=$(curl -s -X POST "$JUICE_SHOP_URL/api/users/login" \
+  HTTP_CODE=$(curl -s -X POST "$JUICE_SHOP_URL/rest/user/login" \
     -H "Content-Type: application/json" \
     -d "{\"email\":\"admin@test.com\",\"password\":\"wrong_password_$i\"}" \
     -o /dev/null -w "%{http_code}" 2>/dev/null || echo "000")

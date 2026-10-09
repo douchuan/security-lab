@@ -10,7 +10,7 @@
   <!-- 规则 100001: 检测到失败的登录尝试 -->
   <rule id="100001" level="3">
     <if_sid>31122</if_sid>
-    <match>/api/users/login</match>
+    <match>/rest/user/login</match>
     <description>Failed login attempt on Juice Shop from $(srcip)</description>
   </rule>
 
@@ -26,7 +26,7 @@
   <!-- 注: rule 31150 may not exist in all Wazuh versions; this rule is informational -->
   <rule id="100003" level="12">
     <if_sid>31150</if_sid>
-    <match>/api/users/login</match>
+    <match>/rest/user/login</match>
     <description>Possible successful brute force attack on Juice Shop from $(srcip)</description>
     <group>bruteforce,authentication,high_severity,</group>
   </rule>
