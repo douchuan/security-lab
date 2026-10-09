@@ -118,9 +118,12 @@ echo ""
 ALERTS_JSON=$(docker compose exec wazuh-manager cat /var/ossec/logs/alerts/alerts.json 2>/dev/null || echo "")
 
 if [ -n "$ALERTS_JSON" ]; then
-  # 暴力破解告警 (精确匹配 rule id)
+  # 暴力破解告警 (优先展示关联告警 100002，其次展示单次失败 100001)
   echo "🔴 [Layer 1] 暴力破解 (Juice Shop → Wazuh):"
-  BRUTE=$(echo "$ALERTS_JSON" | grep '"id":"10000[123]"' | head -2 || echo "")
+  BRUTE=$(echo "$ALERTS_JSON" | grep '"id":"100002"' | head -2 || echo "")
+  if [ -z "$BRUTE" ]; then
+    BRUTE=$(echo "$ALERTS_JSON" | grep '"id":"100001"' | head -2 || echo "")
+  fi
   [ -n "$BRUTE" ] && echo "$BRUTE" | while IFS= read -r line; do echo "    $line"; done || echo "    (未触发)"
   echo ""
 
