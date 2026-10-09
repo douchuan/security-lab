@@ -5,8 +5,6 @@ networks:
   app-net:
     driver: bridge
     internal: true
-  hids-net:
-    driver: bridge
   siem-net:
     driver: bridge
 
@@ -39,7 +37,6 @@ services:
     container_name: juice-shop
     networks:
       - app-net
-      - hids-net
     expose:
       - "3000"
     volumes:
@@ -52,7 +49,6 @@ services:
     image: wazuh/wazuh-agent:4.14.8
     container_name: wazuh-agent
     networks:
-      - hids-net
       - siem-net
     volumes:
       # 日志收集：各组件日志通过 volume 挂载给 Agent
