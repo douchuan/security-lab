@@ -7,9 +7,9 @@
   <!-- Juice Shop access log 为 Morgan combined 格式，与 Apache/Nginx 标准格式一致 -->
   <!-- Wazuh 内置 web-accesslog decoder 自动解析，提取 srcip/url/status 字段 -->
 
-  <!-- 规则 100001: 检测到失败的登录尝试 -->
-  <rule id="100001" level="3">
-    <if_sid>31122</if_sid>
+  <!-- 规则 100001: 检测到失败的登录尝试 (HTTP 401 = 认证失败) -->
+  <rule id="100001" level="5">
+    <if_sid>31101</if_sid>
     <match>/rest/user/login</match>
     <description>Failed login attempt on Juice Shop from $(srcip)</description>
   </rule>
