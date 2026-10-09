@@ -1,5 +1,6 @@
 <!-- Wazuh Manager 本地规则 -->
 <!-- 暴力破解 (Juice Shop) + WAF 拦截 (ModSecurity) 两层检测 -->
+<!-- 自定义规则 ID: 100000 – 110000 为用户自定义范围，避免与内置规则 (1–99999) 冲突 -->
 
 <group name="local,">
 
@@ -14,7 +15,14 @@
     <description>Failed login attempt on Juice Shop from $(srcip)</description>
   </rule>
 
-  <!-- 规则 100002: 暴力破解 — 短时间大量失败登录 -->
+  <!-- 规则 100002: 暴力破解 — 频率关联分析 -->
+  <!-- 工作机制: Wazuh 维护一个计数器，跟踪每个源 IP 触发 rule 100001 的次数 -->
+  <!--   frequency="8"    → 2 分钟内累计 8 次失败登录才触发 -->
+  <!--   timeframe="120"  → 时间窗口 120 秒 -->
+  <!--   same_source_ip   → 只统计同一源 IP 的事件，不同 IP 分别计数 -->
+  <!--   if_matched_sid   → 关联 rule 100001 的触发事件 -->
+  <!-- 调优建议: 生产环境建议提高到 frequency=20 timeframe=300，降低误报 -->
+  <!-- 教学说明: 8/120 适合实验环境快速验证，生产值需根据业务流量调整 -->
   <rule id="100002" level="10" frequency="8" timeframe="120">
     <if_matched_sid>100001</if_matched_sid>
     <same_source_ip />
