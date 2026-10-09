@@ -5,8 +5,6 @@ networks:
   app-net:
     driver: bridge
     internal: true
-  monitor-net:
-    driver: bridge
   hids-net:
     driver: bridge
   siem-net:
@@ -48,24 +46,6 @@ services:
       - juice-shop-logs:/app/logs
     restart: unless-stopped
 
-  # NIDS: Suricata
-  suricata:
-    image: jasonish/suricata:latest
-    container_name: suricata
-    networks:
-      - monitor-net
-      - app-net
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    volumes:
-      - ./configs/suricata.yaml:/etc/suricata/suricata.yaml:ro
-      - suricata-log:/var/log/suricata
-    command: >
-      -c /etc/suricata/suricata.yaml
-      -i eth1
-    restart: unless-stopped
-
   # HIDS: Wazuh Agent
   wazuh-agent:
     image: wazuh/wazuh-agent:4.14.8
@@ -76,7 +56,6 @@ services:
     volumes:
       # 日志收集：各组件日志通过 volume 挂载给 Agent
       - juice-shop-logs:/monitored/juice-shop/logs:ro        # Juice Shop access log
-      - suricata-log:/monitored/suricata:ro                  # Suricata eve.json
       - modsec-log:/monitored/modsecurity:ro                 # ModSecurity audit log
       # Agent 配置
       - ./configs/ossec.conf:/var/ossec/etc/ossec.conf:ro
@@ -114,7 +93,6 @@ services:
     restart: unless-stopped
 
 volumes:
-  suricata-log:
   juice-shop-data:
   juice-shop-logs:
   modsec-log:

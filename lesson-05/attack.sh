@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Lesson 05 Attack Script
-# 目标：演示 Wazuh Manager (SIEM) 三层攻击检测
-# 数据流：三组件日志 → Docker Volume → Wazuh Agent → Wazuh Manager → Decoder → Rule → Alert
+# 目标：演示 Wazuh Manager (SIEM) 两层攻击检测
+# 数据流：WAF + 应用日志 → Docker Volume → Wazuh Agent → Wazuh Manager → Decoder → Rule → Alert
 
 set -euo pipefail
 
@@ -40,7 +40,6 @@ SQL_PAYLOADS=(
 
 for i in "${!SQL_PAYLOADS[@]}"; do
   PAYLOAD="${SQL_PAYLOADS[$i]}"
-  ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$PAYLOAD'))" 2>/dev/null || echo "$PAYLOAD")
   HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
     "$JUICE_SHOP_URL/api/users/login" \
     -H "Content-Type: application/json" \
@@ -49,48 +48,14 @@ for i in "${!SQL_PAYLOADS[@]}"; do
   sleep 0.5
 done
 
-echo "  ✓ SQL 注入攻击完成（应被 ModSecurity 拦截）"
+echo "  ✓ SQL 注入攻击完成（应被 ModSecurity 拦截并记录审计日志）"
 echo ""
 
 # ============================================================
-# 第二阶段：端口扫描（触发 NIDS / Suricata）
+# 第二阶段：暴力破解（触发 SIEM 关联规则）
 # ============================================================
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "[Phase 2] 端口扫描 → 触发 NIDS (Suricata)"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-
-# 检测 nmap 是否可用
-if command -v nmap &>/dev/null; then
-  echo "  使用 nmap 扫描 juice-shop 容器的端口..."
-  JUICE_SHOP_IP=$(docker inspect juice-shop --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 2>/dev/null | head -1)
-  if [ -n "$JUICE_SHOP_IP" ]; then
-    echo "  Juice Shop IP: $JUICE_SHOP_IP"
-    echo "  扫描端口: 1-100"
-    nmap -T4 -Pn -p 1-100 "$JUICE_SHOP_IP" --host-timeout 10s 2>/dev/null || echo "  (扫描未完成)"
-    echo "  ✓ 端口扫描完成（应被 Suricata 检测）"
-  else
-    echo "  ⚠ 无法获取 Juice Shop IP，跳过端口扫描"
-  fi
-else
-  echo "  ⚠ nmap 未安装，使用简易端口探测替代..."
-  JUICE_SHOP_IP=$(docker inspect juice-shop --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 2>/dev/null | head -1)
-  if [ -n "$JUICE_SHOP_IP" ]; then
-    for PORT in 22 80 443 3000 3306 5432 6379 8080 9200; do
-      (echo >/dev/tcp/$JUICE_SHOP_IP/$PORT) 2>/dev/null && echo "  端口 $PORT: OPEN" || echo "  端口 $PORT: CLOSED"
-    done
-    echo "  ✓ 端口探测完成"
-  else
-    echo "  ⚠ 无法获取 Juice Shop IP"
-  fi
-fi
-echo ""
-
-# ============================================================
-# 第三阶段：暴力破解（触发 SIEM 关联规则）
-# ============================================================
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "[Phase 3] 暴力破解 → 触发 SIEM 关联分析"
+echo "[Phase 2] 暴力破解 → 触发 SIEM 关联分析"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
@@ -121,8 +86,8 @@ done
 echo "  攻击完成: 总 $ATTEMPTS 次, 成功 $SUCCESS 次, 失败 $FAILED 次"
 echo ""
 
-# 4. 确认日志已写入 volume
-echo "[Step 4] 验证各组件日志已写入 volume..."
+# 3. 确认日志已写入 volume
+echo "[Step 3] 验证各组件日志已写入 volume..."
 echo ""
 echo "  Juice Shop access log:"
 docker compose exec juice-shop ls -la /app/logs/ 2>/dev/null | head -3 || echo "  (无法查看)"
@@ -133,19 +98,16 @@ echo "  ModSecurity audit log:"
 docker compose exec nginx-modsecurity ls -la /var/log/modsecurity/ 2>/dev/null || echo "  (无法查看)"
 docker compose exec nginx-modsecurity tail -3 /var/log/modsecurity/audit.log 2>/dev/null || echo "  (无)"
 echo ""
-echo "  Suricata eve.json (前 2 行):"
-docker compose exec suricata head -2 /var/log/suricata/eve.json 2>/dev/null || echo "  (无)"
-echo ""
 
-# 5. 等待 SIEM 关联分析
-echo "[Step 5] 等待 Wazuh Manager 关联分析 (30 秒)..."
+# 4. 等待 SIEM 关联分析
+echo "[Step 4] 等待 Wazuh Manager 关联分析 (30 秒)..."
 sleep 30
 echo "  ✓ 等待完成"
 echo ""
 
-# 6. 查看三层告警
+# 5. 查看两层告警
 echo "============================================"
-echo "  SIEM 三层告警汇总"
+echo "  SIEM 两层告警汇总"
 echo "============================================"
 echo ""
 
@@ -158,14 +120,8 @@ if [ -n "$ALERTS_JSON" ]; then
   [ -n "$BRUTE" ] && echo "$BRUTE" | while IFS= read -r line; do echo "    $line"; done || echo "    (未触发)"
   echo ""
 
-  # Suricata 告警
-  echo "🟡 [Layer 2] NIDS 检测 (Suricata → Wazuh):"
-  SURICATA=$(echo "$ALERTS_JSON" | grep -i "suricata\|100010\|100011" | head -2 || echo "")
-  [ -n "$SURICATA" ] && echo "$SURICATA" | while IFS= read -r line; do echo "    $line"; done || echo "    (未触发)"
-  echo ""
-
   # ModSecurity 告警
-  echo "🟠 [Layer 3] WAF 拦截 (ModSecurity → Wazuh):"
+  echo "🟠 [Layer 2] WAF 拦截 (ModSecurity → Wazuh):"
   MODSEC=$(echo "$ALERTS_JSON" | grep -i "modsecurity\|100020\|100021\|SQL" | head -2 || echo "")
   [ -n "$MODSEC" ] && echo "$MODSEC" | while IFS= read -r line; do echo "    $line"; done || echo "    (未触发)"
   echo ""
@@ -175,7 +131,7 @@ else
   docker compose exec wazuh-manager tail -10 /var/ossec/logs/ossec.log 2>/dev/null || echo "  (无)"
 fi
 
-# 7. 统计
+# 6. 统计
 echo "============================================"
 echo "  告警统计"
 echo "============================================"
@@ -187,9 +143,8 @@ else
 fi
 echo ""
 
-# 8. SIEM 处理流水线验证
-echo "[Step 6] SIEM 处理流水线验证:"
-echo "  网络层: Suricata → eve.json (JSON) → 内置 decoder → rule 100010/100011 → Alert"
+# 7. SIEM 处理流水线验证
+echo "[Step 5] SIEM 处理流水线验证:"
 echo "  应用层: ModSecurity → audit.log (审计格式) → 内置 decoder → rule 100020/100021 → Alert"
 echo "  业务层: Juice Shop → access.log (Morgan) → 自定义 decoder → rule 100001/100002 → Alert"
 echo "  汇聚点: Wazuh Manager 集中存储 + 关联分析"
@@ -198,8 +153,8 @@ echo ""
 echo "============================================"
 echo "  结论"
 echo "============================================"
-echo "  SIEM 聚合了来自网络层、应用层、业务层的所有日志。"
-echo "  三种不同格式的日志经过 Decoder 统一解析后，"
+echo "  SIEM 聚合了来自 WAF 层和应用层的所有日志。"
+echo "  两种不同格式的日志经过 Decoder 统一解析后，"
 echo "  关联规则将低级别事件聚合为高级别告警。"
 echo "  下一课：添加 Dashboard，将所有安全事件可视化！"
 echo "============================================"

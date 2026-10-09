@@ -1,5 +1,5 @@
 <!-- Wazuh Manager 本地规则 -->
-<!-- 暴力破解 + Suricata + ModSecurity 三层检测 -->
+<!-- 暴力破解 (Juice Shop) + WAF 拦截 (ModSecurity) 两层检测 -->
 
 <group name="local,">
 
@@ -29,25 +29,6 @@
     <field name="http_status">200</field>
     <description>Possible successful brute force attack from $(srcip)</description>
     <group>bruteforce,authentication,high_severity,</group>
-  </rule>
-
-  <!-- ==================== Suricata NIDS 告警 ==================== -->
-  <!-- Wazuh 内置 suricata decoder 解析 eve.json -->
-
-  <!-- 规则 100010: Suricata 检测到攻击行为 -->
-  <rule id="100010" level="7">
-    <if_sid>86601</if_sid>
-    <field name="event_type">alert</field>
-    <description>Suricata alert: $(data.alert.signature)</description>
-    <group>ids,suricata,</group>
-  </rule>
-
-  <!-- 规则 100011: Suricata 检测到端口扫描 -->
-  <rule id="100011" level="8">
-    <if_sid>100010</if_sid>
-    <field name="data.alert.category">Attempted Information Leak</field>
-    <description>Suricata detected port scan from $(srcip)</description>
-    <group>ids,suricata,reconnaissance,</group>
   </rule>
 
   <!-- ==================== ModSecurity WAF 告警 ==================== -->
