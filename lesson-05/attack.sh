@@ -90,13 +90,17 @@ echo ""
 echo "[Step 3] 验证各组件日志已写入 volume..."
 echo ""
 echo "  Juice Shop access log:"
-docker compose exec juice-shop ls -la /app/logs/ 2>/dev/null | head -3 || echo "  (无法查看)"
-echo "  最近 2 行:"
-docker compose exec juice-shop tail -2 /app/logs/access.log 2>/dev/null || echo "  (无)"
+if docker compose exec wazuh-agent ls /monitored/juice-shop/logs/ 2>/dev/null | grep -q "access.log"; then
+  docker compose exec wazuh-agent ls -la /monitored/juice-shop/logs/ 2>/dev/null | head -3
+  echo "  最近 2 行:"
+  docker compose exec wazuh-agent tail -2 /monitored/juice-shop/logs/access.log.* 2>/dev/null | head -2 || echo "  (无)"
+else
+  echo "  (日志尚未写入)"
+fi
 echo ""
 echo "  ModSecurity audit log:"
 docker compose exec nginx-modsecurity ls -la /var/log/modsecurity/ 2>/dev/null || echo "  (无法查看)"
-docker compose exec nginx-modsecurity tail -3 /var/log/modsecurity/audit.log 2>/dev/null || echo "  (无)"
+docker compose exec nginx-modsecurity tail -1 /var/log/modsecurity/audit.log 2>/dev/null | head -c 200 || echo "  (无)"
 echo ""
 
 # 4. 等待 SIEM 关联分析
@@ -114,15 +118,15 @@ echo ""
 ALERTS_JSON=$(docker compose exec wazuh-manager cat /var/ossec/logs/alerts/alerts.json 2>/dev/null || echo "")
 
 if [ -n "$ALERTS_JSON" ]; then
-  # 暴力破解告警
+  # 暴力破解告警 (精确匹配 rule id)
   echo "🔴 [Layer 1] 暴力破解 (Juice Shop → Wazuh):"
-  BRUTE=$(echo "$ALERTS_JSON" | grep -i "brute\|100002\|100003" | head -2 || echo "")
+  BRUTE=$(echo "$ALERTS_JSON" | grep '"id":"10000[123]"' | head -2 || echo "")
   [ -n "$BRUTE" ] && echo "$BRUTE" | while IFS= read -r line; do echo "    $line"; done || echo "    (未触发)"
   echo ""
 
   # ModSecurity 告警
   echo "🟠 [Layer 2] WAF 拦截 (ModSecurity → Wazuh):"
-  MODSEC=$(echo "$ALERTS_JSON" | grep -i "modsecurity\|100020\|100021\|SQL" | head -2 || echo "")
+  MODSEC=$(echo "$ALERTS_JSON" | grep '"id":"10002[012]"' | head -2 || echo "")
   [ -n "$MODSEC" ] && echo "$MODSEC" | while IFS= read -r line; do echo "    $line"; done || echo "    (未触发)"
   echo ""
 else

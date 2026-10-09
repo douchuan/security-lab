@@ -1,11 +1,10 @@
 <!-- Wazuh Manager 本地规则 -->
-<!-- 暴力破解 (Juice Shop) 检测 -->
-<!-- Juice Shop 日志被 Wazuh 内置 web-accesslog decoder 解析 -->
+<!-- 暴力破解 (Juice Shop) + WAF 拦截 (ModSecurity) 两层检测 -->
 
 <group name="local,">
 
   <!-- ==================== Juice Shop 暴力破解检测 ==================== -->
-  <!-- web-accesslog decoder 解析后: srcip, protocol, id(HTTP 状态码), url -->
+  <!-- Juice Shop 日志被 Wazuh 内置 web-accesslog decoder 解析 -->
   <!-- full_log 示例: 172.67.157.37 - - [09/Oct/2026:00:27:53 +0000] "POST /api/users/login HTTP/1.1" 500 - "-" "curl/8.7.1" -->
 
   <!-- 规则 100001: 检测到失败的登录尝试 -->
@@ -24,11 +23,40 @@
   </rule>
 
   <!-- 规则 100003: 暴力破解成功（失败后突然 200） -->
+  <!-- 注: rule 31150 may not exist in all Wazuh versions; this rule is informational -->
   <rule id="100003" level="12">
     <if_sid>31150</if_sid>
     <match>/api/users/login</match>
     <description>Possible successful brute force attack on Juice Shop from $(srcip)</description>
     <group>bruteforce,authentication,high_severity,</group>
+  </rule>
+
+  <!-- ==================== ModSecurity WAF 告警 ==================== -->
+  <!-- ModSecurity 审计日志为 JSON 格式，被 Wazuh 内置 json decoder 解析 -->
+  <!-- logtest 验证: Phase 2 decoder='json', 字段全部正确解析 -->
+
+  <!-- 规则 100020: ModSecurity 父规则 — 匹配来自 ModSecurity 的 JSON 审计日志 -->
+  <!-- 用 raw event 中的 producer 字段识别 ModSecurity 来源 -->
+  <rule id="100020" level="5">
+    <match>"producer":{"modsecurity":"ModSecurity</match>
+    <description>ModSecurity audit event detected from $(data.transaction.client_ip)</description>
+    <group>waf,</group>
+  </rule>
+
+  <!-- 规则 100021: ModSecurity 拦截了请求 (is_interrupted=true, 返回 403) -->
+  <rule id="100021" level="7">
+    <if_sid>100020</if_sid>
+    <match>"is_interrupted":true</match>
+    <description>ModSecurity blocked a request from $(data.transaction.client_ip)</description>
+    <group>web_attack,waf,</group>
+  </rule>
+
+  <!-- 规则 100022: ModSecurity 检测到 SQL 注入 (OWASP CRS rule 94x) -->
+  <rule id="100022" level="10">
+    <if_sid>100021</if_sid>
+    <match>"ruleId":"94</match>
+    <description>ModSecurity blocked SQL injection attempt from $(data.transaction.client_ip)</description>
+    <group>web_attack,waf,sqli,high_severity,</group>
   </rule>
 
 </group>

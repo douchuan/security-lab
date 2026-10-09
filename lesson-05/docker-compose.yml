@@ -28,6 +28,7 @@ services:
       - MODSEC_AUDIT_LOG_TYPE=Serial
     volumes:
       - modsec-log:/var/log/modsecurity
+    user: "root"
     depends_on:
       - juice-shop
     restart: unless-stopped
@@ -56,6 +57,7 @@ services:
     volumes:
       # 日志收集：各组件日志通过 volume 挂载给 Agent
       - juice-shop-logs:/monitored/juice-shop/logs:ro        # Juice Shop access log
+      - modsec-log:/monitored/modsecurity:ro                 # ModSecurity audit log
       # Agent 配置
       - ./configs/ossec.conf:/var/ossec/etc/ossec.conf:ro
     environment:
@@ -79,6 +81,7 @@ services:
       # 自定义规则 & decoder
       - ./configs/local_rules.xml:/var/ossec/etc/rules/local_rules.xml:ro
       - ./configs/decoders/juice-shop-decoder.xml:/var/ossec/etc/decoders/juiceshop-decoder.xml:ro
+      - ./configs/decoders/modsec-decoder.xml:/var/ossec/etc/decoders/modsec-decoder.xml:ro
       # 持久化数据
       - wazuh-api-etc:/var/ossec/api/configuration
       - wazuh-manager-etc:/var/ossec/etc
