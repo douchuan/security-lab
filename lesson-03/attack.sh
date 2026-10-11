@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Lesson 03: NIDS (Suricata) — 端口扫描检测
 #
 # 部署架构（VirtualBox + Host-Only 网络）：

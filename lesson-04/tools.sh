@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 # 清理本实验 Docker 环境，释放磁盘空间
 function clear() {
     # 查看当前 Docker 磁盘占用概况

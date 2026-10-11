@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Lesson 05 Attack Script
 # 目标：演示 Wazuh Manager (SIEM) 两层攻击检测
 # 数据流：WAF + 应用日志 → Docker Volume → Wazuh Agent → Wazuh Manager → Decoder → Rule → Alert

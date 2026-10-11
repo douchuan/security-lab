@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 
 networks:
   # web-net: Juice Shop 所在的网络，对外暴露 3000 端口

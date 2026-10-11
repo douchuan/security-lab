@@ -28,3 +28,11 @@
 |lesson-01,02,03,04,05,06|实验脚本|
 |presentation|课程讲义(PPT)|
 |tutorials|课程讲义(详细)|
+
+## 许可证
+
+本项目采用双许可证：
+
+- **代码**（docker-compose.yml、shell 脚本等）：[MIT License](LICENSE)
+- **文档**（README、教程、讲义等）：[CC BY-SA 4.0](LICENSE-docs)
+

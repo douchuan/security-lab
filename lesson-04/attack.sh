@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Lesson 04 Attack Script
 # 目标：演示 Wazuh Agent (HIDS) 对主机层威胁的检测。
 # 注意：Juice Shop 为 distroless 镜像（无 shell），攻击操作通过 wazuh-agent 容器

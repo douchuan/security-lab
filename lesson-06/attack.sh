@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Lesson 06 Attack Script — 完整安全链路端到端演示
 # 依次执行三种攻击场景，观察全链路检测效果。
 

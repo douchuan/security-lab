@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Lesson 01 Attack Script
 # 目标：验证 Juice Shop 应用可访问，展示没有安全防护时的脆弱性。
 

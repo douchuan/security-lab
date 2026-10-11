@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 
 networks:
   # dmz-net: WAF 所在网络，对外暴露

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Lesson 02 Attack Script
 # 目标：演示 WAF 对 SQL 注入和 XSS 的拦截。
 
