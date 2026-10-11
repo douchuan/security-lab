@@ -26,4 +26,5 @@
 |目录|介绍|
 |------|------|
 |lesson-01,02,03,04,05,06|实验脚本|
-|presentation|课程讲义|
+|presentation|课程讲义(PPT)|
+|tutorials|课程讲义(详细)|
