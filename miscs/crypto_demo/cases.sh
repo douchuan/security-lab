@@ -1,5 +1,20 @@
 #!/usr/bin/env bash
 
+# =============================================================================
+# 常用密码学工具箱操作演示 (Cryptography Toolbox Demo)
+# =============================================================================
+# 使用 OpenSSL 命令行工具演示六大基础密码学原语的实际操作：
+#
+#   1. 随机数 (Random Number)          — 生成密码学安全的随机字节
+#   2. 对称密码 (Symmetric Encryption)  — AES-256-CBC 加解密
+#   3. 公钥密码 (Public-Key Cryptography) — RSA-OAEP 非对称加解密
+#   4. 散列函数 (Hash Function)        — SHA-256 完整性校验
+#   5. 消息认证码 (Message Authentication Code) — HMAC-SHA-256 认证
+#   6. 数字签名 (Digital Signature)    — RSA + SHA-256 签名与验签
+#
+# 运行方式：bash miscs/crypto_demo/cases.sh
+# =============================================================================
+
 set -euo pipefail
 
 WORKDIR="./outputs"
