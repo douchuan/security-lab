@@ -63,21 +63,25 @@ Nmap（Network Mapper）是最常用的端口扫描工具。它的本质是**向
 
 以 TCP SYN 扫描（`nmap -sS`）为例：
 
-```
-攻击者                    目标主机
-   │                        │
-   │── SYN → 22 ────────────│
-   │← SYN/ACK ←──────────── │  → 端口 OPEN（服务存在）
-   │                        │
-   │── SYN → 80 ────────────│
-   │← SYN/ACK ←──────────── │  → 端口 OPEN
-   │                        │
-   │── SYN → 443 ───────────│
-   │← RST ←──────────────── │  → 端口 CLOSED（无服务监听）
-   │                        │
-   │── SYN → 3306 ──────────│
-   │← 无响应 ←──────────────│  → 端口 FILTERED（被防火墙丢弃）
-   │                        │
+```mermaid
+sequenceDiagram
+    participant A as 攻击者
+    participant T as 目标主机
+
+    A->>T: SYN → 22
+    T-->>A: SYN/ACK
+    Note over T: 端口 22 OPEN（服务存在）
+
+    A->>T: SYN → 80
+    T-->>A: SYN/ACK
+    Note over T: 端口 80 OPEN
+
+    A->>T: SYN → 443
+    T--xA: RST
+    Note over T: 端口 443 CLOSED（无服务监听）
+
+    A->>T: SYN → 3306
+    Note over T: 端口 3306 FILTERED（无响应，被防火墙丢弃）
 ```
 
 根据目标的响应，Nmap 判断端口状态：
@@ -132,21 +136,7 @@ Nmap 不仅能发现开放端口，还能通过更复杂的探测报文推断目
 
 NIDS 的典型工作位置：
 
-```
-互联网
-  │
-  ▼
-┌──────────────┐
-│  防火墙/WAF   │  ← 应用层防护（第二章已部署）
-└──────┬───────┘
-       ▼
-┌──────────────┐     ┌──────────────────┐
-│  业务应用     │     │   NIDS 传感器     │  ← 本章新增
-│  (JuiceShop) │────▶│   监控网络流量     │
-└──────────────┘     │   匹配检测规则     │
-                     │   生成告警         │
-                     └──────────────────┘
-```
+<img src="res/03/nids.svg" alt="nids.svg" width="400" height="400">
 
 NIDS 如何检测端口扫描：
 
@@ -337,26 +327,7 @@ alert tcp any any -> any 3000 (msg:"..."; sid:1000001; rev:1; classtype:attempte
 
 **网络拓扑：**
 
-```
-                    macOS Host
-                        |
-               Host-Only Network
-                192.168.56.0/24
-                        |
-         +--------------+--------------+
-         |                             |
-   +-----+-----+                 +-----+-----+
-   |    VM1    |                 |    VM2    |
-   |           |                 |           |
-   | 192.168.56.101              | 192.168.56.102
-   |                             |           |
-   |  Docker:                    |  工具:     |
-   |  - Juice Shop :3000         |  - Nmap    |
-   |  - Suricata (host模式)      |            |
-   +-----+-----+                 +-----+-----+
-         |                             |
-         ◄───── nmap 扫描 ──────────────►
-```
+<img src="res/03/net-topo.svg" alt="net-topo.svg" width="400" height="400">
 
 **为什么需要两台主机？** Suricata 需要监控**来自其他主机的流量**。如果扫描者和目标在同一台机器上，流量可能走回环接口（loopback），而 Suricata 监听的是物理网卡。为了观察真实的网络检测，扫描必须通过网络进行。
 

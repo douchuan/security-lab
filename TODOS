@@ -1,6 +1,7 @@
-
-- refact architecture diagram by Mermaid or Draw.io
-- too many codes in tutorials, redundant with lesson scripts
-- distill PPT from tutorials
-- explains more about ModSecurity/Suricata/Wazuh/nmap
-- beautiful books with design sense
+[] beautiful books with design sense
+[] distill PPT from tutorials
+[] translate to English (simple english)
+[] submit to isc2 CPE
+[X] refact architecture diagram by Mermaid or Draw.io
+[X] too many codes in tutorials, redundant with lesson scripts
+[] explains more about ModSecurity/Suricata/Wazuh/nmap
