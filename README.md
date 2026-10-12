@@ -29,6 +29,14 @@
 |presentation|课程讲义(PPT)|
 |tutorials|课程讲义(详细)|
 
+---
+
+## 支持项目
+
+如果这个项目对你有所帮助，欢迎请我喝杯啤酒！
+
+<img src="miscs/docs/pay/wechat-pay.jpg" width="220" alt="WeChat Pay QR Code" />
+
 ## 许可证
 
 本项目采用双许可证：

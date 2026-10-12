@@ -2,6 +2,7 @@
 trigger: manual
 name: svg-illustration
 description: Generate professional technical SVG illustrations using a fixed GitBook design system.
+argument-hint: "[topic and illustration requirements]"
 ---
 
 # SVG Illustration Skill
