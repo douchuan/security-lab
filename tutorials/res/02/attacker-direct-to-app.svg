@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 680" role="img" aria-labelledby="title desc">
+  <title id="title">没有任何防护</title>
+  <desc id="desc">攻击者可以直接访问业务应用，说明当前缺少纵深防御。</desc>
+  <rect width="600" height="680" fill="#FFFFFF"/>
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <!-- Attacker -->
+    <circle cx="300" cy="190" r="70" fill="#DDA16F"/>
+    <!-- simple disguise icon -->
+    <path d="M255 177 Q300 153 345 177 L333 184 H267 Z" fill="#FFFFFF"/>
+    <path d="M273 178 L279 165 Q282 159 290 159 H310 Q318 159 321 165 L327 178 Z" fill="#FFFFFF"/>
+    <path d="M267 191 Q279 182 291 191 Q300 198 309 191 Q321 182 333 191 L329 207 Q318 220 300 220 Q282 220 271 207 Z" fill="#FFFFFF"/>
+    <path d="M280 193 L289 196 M311 196 L320 193" stroke="#DDA16F" stroke-width="4" stroke-linecap="round"/>
+    <text x="300" y="244" text-anchor="middle" font-size="22" font-weight="700" fill="#FFFFFF">攻击者</text>
+
+    <!-- Arrow to unprotected gap -->
+    <path d="M300 267 V320" fill="none" stroke="#8FA3B0" stroke-width="4" stroke-linecap="round"/>
+    <path d="M288 308 L300 322 L312 308" fill="none" stroke="#8FA3B0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- No protection zone -->
+    <rect x="80" y="335" width="440" height="130" rx="14" fill="#FFFFFF" stroke="#C5D3DC" stroke-width="3" stroke-dasharray="10 9"/>
+    <text x="300" y="400" text-anchor="middle" font-size="21" fill="#667D8D">⚠ 请求到达应用前没有任何安全设备检测</text>
+
+    <!-- Arrow to application -->
+    <path d="M300 466 V516" fill="none" stroke="#8FA3B0" stroke-width="4" stroke-linecap="round"/>
+    <path d="M288 504 L300 518 L312 504" fill="none" stroke="#8FA3B0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Application -->
+    <rect x="105" y="530" width="390" height="115" rx="14" fill="#83AD8B"/>
+    <!-- server icon -->
+    <g fill="#FFFFFF">
+      <rect x="140" y="550" width="75" height="23" rx="5"/>
+      <rect x="140" y="580" width="75" height="23" rx="5"/>
+      <rect x="140" y="610" width="75" height="23" rx="5"/>
+    </g>
+    <g fill="#83AD8B">
+      <circle cx="151" cy="561.5" r="2.8"/><circle cx="161" cy="561.5" r="2.8"/>
+      <circle cx="151" cy="591.5" r="2.8"/><circle cx="161" cy="591.5" r="2.8"/><circle cx="191" cy="591.5" r="2.8"/><circle cx="201" cy="591.5" r="2.8"/>
+      <circle cx="151" cy="621.5" r="2.8"/><circle cx="161" cy="621.5" r="2.8"/><circle cx="191" cy="621.5" r="2.8"/><circle cx="201" cy="621.5" r="2.8"/>
+    </g>
+    <text x="335" y="600" text-anchor="middle" font-size="20" fill="#FFFFFF">业务</text>
+  </g>
+</svg>

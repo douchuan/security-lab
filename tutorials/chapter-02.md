@@ -19,26 +19,13 @@ CEO 问你："你不是说我们的系统不安全吗？那我们现在能做什
 
 在上一章中，我们的架构是：
 
-```text
-攻击者
-   │
-   ▼ http://localhost:3000
-Juice Shop
-```
+<img src="res/02/attacker-direct-to-app.svg" alt="攻击者直接到达应用" width="400">
 
 攻击者的 HTTP 请求直接到达应用。这种架构存在一个根本问题：**请求到达应用之前，没有任何安全设备对其进行检测。**
 
 如果我们要在请求到达应用之前建立一道防线，需要在两者之间插入一个中间层：
 
-```text
-攻击者
-   │
-   ▼ http://localhost:80
-？？？（新的中间层）
-   │
-   ▼ http://juice-shop:3000（内部网络）
-Juice Shop
-```
+<img src="res/02/midldeware.svg" alt="新的中间层" width="400">
 
 这个中间层需要做到：
 
