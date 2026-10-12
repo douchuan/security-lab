@@ -132,21 +132,12 @@ WAF 的检测范围是有限的，明确这一点非常重要：
 
 三者的关系可以理解为：
 
-```
-Nginx
-  ↓
-负责接待 HTTP 请求，把请求交给 ModSecurity
-
-ModSecurity
-  ↓
-负责执行 WAF 检测，根据规则判断请求是否恶意
-
-OWASP CRS
-  ↓
-提供攻击检测规则，告诉 ModSecurity 什么请求看起来像攻击
-```
+<img src="res/02/modsecurity.svg" alt="ModSecurity 关系" width="400" height="400">
 
 ModSecurity 本身是一个检测引擎，它需要规则集才能工作。OWASP CRS（Core Rule Set）就是这套规则。如果没有 CRS，ModSecurity 就像一本没有内容的法律书——框架在，但没有具体条款。
+
+> ModSecurity CRS 性能优化
+> 每个请求会 “路过” 已启用规则的执行流，但约 700 条规则不会都对完整请求数据跑一遍。CRS 用多层闸门把昂贵匹配挡在尽量少的规则后面，多数请求只触发极少量真实匹配。
 
 ### 2.4.2 为什么使用 `owasp/modsecurity-crs:nginx` 镜像
 
@@ -216,26 +207,7 @@ services:
 
 现在的架构是：
 
-```text
-                    Internet
-                       │
-                       │ :80
-                       ▼
-          ┌──────────────────────┐
-          │ Nginx + ModSecurity  │  ← DMZ (dmz-net)
-          │ WAF                  │
-          │                      │
-          │ BACKEND=             │
-          │ http://juice-shop:3000│
-          └──────────┬───────────┘
-                     │
-                     │ app-net（内部网络）
-                     ▼
-          ┌──────────────────────┐
-          │   Juice Shop         │  ← 内部 (app-net)
-          │   :3000（仅内部可达） │
-          └──────────────────────┘
-```
+<img src="res/02/dmz-net.svg" alt="DMZ 网络架构" width="400" height="400">
 
 ### 2.4.4 关键配置解释
 
@@ -590,15 +562,10 @@ Request Body
 
 WAF 只是在漏洞前面加了一层保护。漏洞本身仍然存在。正确的安全工程思路是：
 
-```text
-修复应用漏洞（参数化查询）
-    +
-WAF 作为额外防护层
-    +
-持续监控和检测
-    +
-事件响应能力
-```
+- [x] 修复应用漏洞（参数化查询）
+- [x] WAF 作为额外防护层
+- [x] 持续监控和检测
+- [x] 事件响应能力
 
 这被称为**纵深防御（Defense in Depth）**：不依赖单一控制点，多层防护互相补充。
 
@@ -693,36 +660,7 @@ Param:  q = ' OR 1=1 --
 
 结合我们已经部署和计划部署的安全控制，最终的安全架构是：
 
-```text
-                    Attacker
-                       │
-                       ▼
-                ┌─────────────┐
-                │  Firewall   │  ← L3/L4：谁可以连接？
-                │   L3 / L4   │
-                └──────┬──────┘
-                       │
-                       ▼
-                ┌─────────────┐
-                │     WAF     │  ← L7：HTTP 请求是不是恶意的？
-                │     L7      │
-                └──────┬──────┘
-                       │
-                       ▼
-                ┌─────────────┐
-                │ Application │  ← 业务应用
-                └──────┬──────┘
-                       │
-                 Network / Host
-                       │
-                       ▼
-                ┌─────────────┐
-                │ NIDS / HIDS │  ← 网络层和主机层检测
-                └──────┬──────┘
-                       │
-                       ▼
-                  SIEM / Dashboard  ← 集中分析和可视化
-```
+<img src="res/02/arch.svg" alt="arch.svg" alt="arch"  width="400" height="400"/>
 
 每一层解决不同的问题：
 
