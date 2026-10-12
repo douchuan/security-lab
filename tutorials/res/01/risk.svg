@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 469" width="700" height="469" role="img" aria-labelledby="title desc">
+  <title id="title">Risk formula</title>
+  <desc id="desc">Risk is represented through vulnerability, asset, and threat.</desc>
+
+  <defs>
+    <style>
+      .label {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        fill: #263746;
+        text-anchor: middle;
+      }
+    </style>
+  </defs>
+
+  <!-- White background blends into GitBook pages -->
+  <rect width="700" height="469" fill="#FFFFFF"/>
+
+  <!-- Light outer ring -->
+  <circle cx="350" cy="234" r="180" fill="none" stroke="#DCE3E8" stroke-width="20"/>
+
+  <!-- Vulnerability: top -->
+  <path d="M 282.2 191.6
+           L 214.3 149.2
+           A 160 160 0 0 1 485.7 149.2
+           L 417.8 191.6
+           A 80 80 0 0 0 282.2 191.6 Z"
+        fill="#6FAAB5"/>
+
+  <!-- Asset: lower right -->
+  <path d="M 420.6 196.4
+           L 491.3 158.9
+           A 160 160 0 0 1 355.6 393.9
+           L 352.8 313.9
+           A 80 80 0 0 0 420.6 196.4 Z"
+        fill="#83AD8B"/>
+
+  <!-- Threat: lower left -->
+  <path d="M 347.2 313.9
+           L 344.4 393.9
+           A 160 160 0 0 1 208.7 158.9
+           L 279.4 196.4
+           A 80 80 0 0 0 347.2 313.9 Z"
+        fill="#DDA16F"/>
+
+  <!-- White separators in the outer ring -->
+  <line x1="407.2" y1="77" x2="416" y2="52.6" stroke="#FFFFFF" stroke-width="22" stroke-linecap="round"/>
+  <line x1="478" y1="341.4" x2="497.9" y2="358.1" stroke="#FFFFFF" stroke-width="22" stroke-linecap="round"/>
+  <line x1="193" y1="291.2" x2="168.6" y2="300" stroke="#FFFFFF" stroke-width="22" stroke-linecap="round"/>
+  <line x1="205.4" y1="150.5" x2="182.9" y2="137.5" stroke="#FFFFFF" stroke-width="22" stroke-linecap="round"/>
+
+  <!-- Center -->
+  <circle cx="350" cy="234" r="55" fill="#FFFFFF" stroke="#DCE3E8" stroke-width="1.5"/>
+  <text x="350" y="245" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="30" font-weight="700" fill="#397F8A">RISK</text>
+
+  <!-- Labels -->
+  <text class="label" x="350" y="118">VULNERABILITY</text>
+  <text class="label" x="454" y="298">ASSET</text>
+  <text class="label" x="246" y="298">THREAT</text>
+</svg>

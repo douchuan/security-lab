@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">用房子理解 Attack Surface</title>
+  <desc id="desc">房子周围标出正门、后门、阳台、一楼窗户和车库等可能的进入路径。开放的入口以橙色强调，关闭并上锁的正门以绿色表示。</desc>
+  <rect width="1200" height="760" fill="#FFFFFF"/>
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" fill="#263746">
+    <text x="600" y="58" text-anchor="middle" font-size="30" font-weight="700">用一栋房子理解 Attack Surface</text>
+  </g>
+
+  <!-- Ground -->
+  <path d="M100 610 H1100" fill="none" stroke="#DCE3E8" stroke-width="2"/>
+
+  <!-- House roof and body -->
+  <path d="M265 285 L600 115 L935 285" fill="#DCE3E8" stroke="#263746" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M315 275 L600 132 L885 275" fill="#FFFFFF" stroke="#6FAAB5" stroke-width="3" stroke-linejoin="round"/>
+  <rect x="305" y="275" width="590" height="335" rx="3" fill="#F7F9FA" stroke="#263746" stroke-width="4"/>
+  <!-- upper wall / facade -->
+  <rect x="330" y="300" width="540" height="285" fill="#FFFFFF" stroke="#DCE3E8" stroke-width="2"/>
+
+  <!-- Balcony -->
+  <rect x="700" y="318" width="145" height="90" fill="#DCE3E8" stroke="#263746" stroke-width="3"/>
+  <rect x="715" y="332" width="115" height="55" fill="#FFFFFF" stroke="#6FAAB5" stroke-width="2"/>
+  <path d="M705 387 H840 M720 387 V407 M742 387 V407 M764 387 V407 M786 387 V407 M808 387 V407 M830 387 V407" stroke="#263746" stroke-width="3" fill="none"/>
+  <path d="M700 407 H845" stroke="#263746" stroke-width="4"/>
+
+  <!-- Windows -->
+  <g stroke="#263746" stroke-width="3">
+    <rect x="365" y="340" width="100" height="88" rx="2" fill="#DCE3E8"/>
+    <rect x="377" y="352" width="76" height="64" fill="#6FAAB5" stroke="#FFFFFF" stroke-width="2"/>
+    <path d="M415 352 V416 M377 384 H453" stroke="#FFFFFF" stroke-width="3" fill="none"/>
+    <rect x="365" y="465" width="100" height="88" rx="2" fill="#DCE3E8"/>
+    <rect x="377" y="477" width="76" height="64" fill="#DDA16F" stroke="#FFFFFF" stroke-width="2"/>
+    <path d="M415 477 V541 M377 509 H453" stroke="#FFFFFF" stroke-width="3" fill="none"/>
+  </g>
+
+  <!-- Front door, locked -->
+  <rect x="520" y="440" width="110" height="170" rx="3" fill="#83AD8B" stroke="#263746" stroke-width="4"/>
+  <rect x="535" y="455" width="80" height="140" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+  <circle cx="607" cy="526" r="5" fill="#263746"/>
+  <rect x="575" y="495" width="20" height="23" rx="3" fill="#FFFFFF" stroke="#263746" stroke-width="2"/>
+  <path d="M580 495 V489 A5 5 0 0 1 590 489 V495" fill="none" stroke="#263746" stroke-width="3"/>
+  <!-- Path to front door -->
+  <path d="M575 660 V615" stroke="#83AD8B" stroke-width="5" stroke-linecap="round"/>
+  <path d="M565 627 L575 615 L585 627" fill="none" stroke="#83AD8B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Garage -->
+  <rect x="895" y="395" width="190" height="215" rx="3" fill="#DCE3E8" stroke="#263746" stroke-width="4"/>
+  <path d="M920 425 H1060 V590 H920 Z" fill="#FFFFFF" stroke="#6FAAB5" stroke-width="3"/>
+  <path d="M920 458 H1060 M920 491 H1060 M920 524 H1060 M920 557 H1060" stroke="#DCE3E8" stroke-width="4"/>
+  <rect x="936" y="443" width="108" height="147" fill="#DDA16F" opacity="0.22"/>
+  <path d="M920 590 H1060" stroke="#263746" stroke-width="4"/>
+
+  <!-- Entry-path callouts -->
+  <!-- Back door -->
+  <path d="M270 515 H305" stroke="#DDA16F" stroke-width="4" stroke-linecap="round"/>
+  <path d="M282 505 L270 515 L282 525" fill="none" stroke="#DDA16F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="95" y="477" width="175" height="76" rx="10" fill="#FFFFFF" stroke="#DDA16F" stroke-width="2.5"/>
+  <text x="182" y="505" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="19" font-weight="700" fill="#263746">后门</text>
+  <text x="182" y="531" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#DDA16F">开放入口</text>
+
+  <!-- First-floor window -->
+  <path d="M260 395 H365" stroke="#DDA16F" stroke-width="4" stroke-linecap="round"/>
+  <path d="M272 385 L260 395 L272 405" fill="none" stroke="#DDA16F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="95" y="356" width="165" height="76" rx="10" fill="#FFFFFF" stroke="#DDA16F" stroke-width="2.5"/>
+  <text x="177" y="384" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="19" font-weight="700" fill="#263746">一楼窗户</text>
+  <text x="177" y="410" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#DDA16F">开放入口</text>
+
+  <!-- Balcony path -->
+  <path d="M845 362 H975 V250" fill="none" stroke="#DDA16F" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M965 262 L975 250 L985 262" fill="none" stroke="#DDA16F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="890" y="170" width="170" height="68" rx="10" fill="#FFFFFF" stroke="#DDA16F" stroke-width="2.5"/>
+  <text x="975" y="197" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="19" font-weight="700" fill="#263746">阳台</text>
+  <text x="975" y="221" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#DDA16F">潜在入口</text>
+
+  <!-- Garage entry -->
+  <path d="M1085 515 H1130" stroke="#DDA16F" stroke-width="4" stroke-linecap="round"/>
+  <path d="M1118 505 L1130 515 L1118 525" fill="none" stroke="#DDA16F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="1000" y="620" width="150" height="62" rx="10" fill="#FFFFFF" stroke="#DDA16F" stroke-width="2.5"/>
+  <text x="1075" y="645" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="19" font-weight="700" fill="#263746">车库门</text>
+  <text x="1075" y="666" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="14" fill="#DDA16F">开放入口</text>
+
+  <!-- Front door label -->
+  <rect x="470" y="635" width="210" height="56" rx="10" fill="#FFFFFF" stroke="#83AD8B" stroke-width="2.5"/>
+  <text x="575" y="658" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="18" font-weight="700" fill="#263746">正门</text>
+  <text x="575" y="679" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="14" fill="#56835F">关闭并上锁</text>
+
+  <!-- Legend -->
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <rect x="100" y="125" width="18" height="18" rx="3" fill="#DDA16F"/>
+    <text x="128" y="140" font-size="15" fill="#263746">开放 / 潜在入口</text>
+    <rect x="100" y="151" width="18" height="18" rx="3" fill="#83AD8B"/>
+    <text x="128" y="166" font-size="15" fill="#263746">已关闭并上锁</text>
+  </g>
+</svg>

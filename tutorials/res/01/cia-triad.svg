@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">CIA Triad：机密性、完整性、可用性</title>
+  <desc id="desc">三角形展示信息安全的三个核心目标：机密性、完整性和可用性，并附有中文说明。</desc>
+  <rect width="1200" height="760" fill="#FFFFFF"/>
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <!-- Triangle relationships -->
+    <path d="M600 190 L365 535 L835 535 Z" fill="none" stroke="#DCE3E8" stroke-width="5" stroke-linejoin="round"/>
+
+    <!-- Center label -->
+    <text x="600" y="392" text-anchor="middle" font-size="38" font-weight="700" fill="#263746">CIA</text>
+
+    <!-- Confidentiality node -->
+    <circle cx="600" cy="190" r="122" fill="#6FAAB5"/>
+    <!-- lock icon -->
+    <path d="M573 174 V157 A27 27 0 0 1 627 157 V174" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
+    <rect x="561" y="171" width="78" height="66" rx="9" fill="#FFFFFF"/>
+    <circle cx="600" cy="195" r="8" fill="#6FAAB5"/>
+    <path d="M600 201 V216" stroke="#6FAAB5" stroke-width="7" stroke-linecap="round"/>
+    <text x="600" y="271" text-anchor="middle" font-size="23" font-weight="700" fill="#FFFFFF">Confidentiality</text>
+
+    <!-- Integrity node -->
+    <circle cx="365" cy="535" r="122" fill="#83AD8B"/>
+    <path d="M365 454 L406 470 V500 C406 528 389 551 365 565 C341 551 324 528 324 500 V470 Z" fill="#FFFFFF"/>
+    <path d="M345 507 L359 521 L386 492" fill="none" stroke="#83AD8B" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="365" y="582" text-anchor="middle" font-size="24" font-weight="700" fill="#FFFFFF">Integrity</text>
+
+    <!-- Availability node -->
+    <circle cx="835" cy="535" r="122" fill="#DDA16F"/>
+    <circle cx="835" cy="490" r="42" fill="none" stroke="#FFFFFF" stroke-width="8"/>
+    <path d="M835 466 V491 L854 505" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="835" y="582" text-anchor="middle" font-size="24" font-weight="700" fill="#FFFFFF">Availability</text>
+
+  </g>
+</svg>

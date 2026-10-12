@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
+  <title id="title">实验环境标准化</title>
+  <desc id="desc">一份 Compose 配置，让每位学员获得一致的实验环境</desc>
+  <rect width="1200" height="680" fill="#FFFFFF"/>
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <text x="600" y="55" text-anchor="middle" font-size="29" font-weight="700" fill="#263746">实验环境标准化</text>
+
+    <rect x="55" y="155" width="290" height="345" rx="14" fill="#F7F9FA" stroke="#DCE3E8" stroke-width="2.5"/>
+    <rect x="55" y="155" width="290" height="58" rx="14" fill="#6FAAB5"/>
+    <rect x="55" y="195" width="290" height="18" fill="#6FAAB5"/>
+    <text x="200" y="191" text-anchor="middle" font-size="22" font-weight="700" fill="#FFFFFF">统一配置</text>
+    <rect x="82" y="240" width="236" height="86" rx="8" fill="#FFFFFF" stroke="#DCE3E8" stroke-width="2"/>
+    <path d="M102 262 H123 M102 275 H123 M102 288 H123" stroke="#6FAAB5" stroke-width="4" stroke-linecap="round"/>
+    <text x="138" y="266" font-size="17" font-weight="700" fill="#263746">docker-compose.yml</text>
+    <text x="138" y="292" font-size="14" fill="#536675">服务 · 网络 · 配置</text>
+    <rect x="82" y="350" width="236" height="105" rx="8" fill="#FFFFFF" stroke="#DCE3E8" stroke-width="2"/>
+    <text x="200" y="378" text-anchor="middle" font-size="16" font-weight="700" fill="#263746">课程统一维护</text>
+    <text x="200" y="405" text-anchor="middle" font-size="15" fill="#536675">镜像版本与启动方式</text>
+    <text x="200" y="429" text-anchor="middle" font-size="15" fill="#536675">减少环境差异</text>
+
+    <path d="M345 325 H415" stroke="#DCE3E8" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M403 313 L415 325 L403 337" stroke="#6FAAB5" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <rect x="415" y="240" width="350" height="170" rx="14" fill="#263746"/>
+    <circle cx="441" cy="265" r="5" fill="#DDA16F"/>
+    <circle cx="459" cy="265" r="5" fill="#83AD8B"/>
+    <circle cx="477" cy="265" r="5" fill="#6FAAB5"/>
+    <text x="590" y="306" text-anchor="middle" font-size="16" fill="#DCE3E8">执行命令</text>
+    <text x="590" y="347" text-anchor="middle" font-family="SFMono-Regular, Consolas, monospace" font-size="21" font-weight="700" fill="#FFFFFF">docker compose</text>
+    <text x="590" y="377" text-anchor="middle" font-family="SFMono-Regular, Consolas, monospace" font-size="21" font-weight="700" fill="#FFFFFF">up -d</text>
+
+    <path d="M765 325 H835" stroke="#DCE3E8" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M823 313 L835 325 L823 337" stroke="#6FAAB5" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <rect x="835" y="145" width="310" height="365" rx="14" fill="#F7F9FA" stroke="#6FAAB5" stroke-width="2.5"/>
+    <rect x="835" y="145" width="310" height="58" rx="14" fill="#6FAAB5"/>
+    <rect x="835" y="185" width="310" height="18" fill="#6FAAB5"/>
+    <text x="990" y="181" text-anchor="middle" font-size="22" font-weight="700" fill="#FFFFFF">Docker 实验环境</text>
+
+    <rect x="865" y="225" width="250" height="52" rx="8" fill="#FFFFFF" stroke="#DCE3E8" stroke-width="2"/>
+    <rect x="865" y="225" width="8" height="52" rx="4" fill="#83AD8B"/>
+    <text x="990" y="257" text-anchor="middle" font-size="17" font-weight="700" fill="#263746">Juice Shop</text>
+
+    <rect x="865" y="291" width="250" height="52" rx="8" fill="#FFFFFF" stroke="#DCE3E8" stroke-width="2"/>
+    <rect x="865" y="291" width="8" height="52" rx="4" fill="#6FAAB5"/>
+    <text x="990" y="323" text-anchor="middle" font-size="17" font-weight="700" fill="#263746">ModSecurity</text>
+
+    <rect x="865" y="357" width="250" height="52" rx="8" fill="#FFFFFF" stroke="#DCE3E8" stroke-width="2"/>
+    <rect x="865" y="357" width="8" height="52" rx="4" fill="#DDA16F"/>
+    <text x="990" y="389" text-anchor="middle" font-size="17" font-weight="700" fill="#263746">Suricata</text>
+
+    <text x="990" y="445" text-anchor="middle" font-size="15" fill="#536675">后续课程可逐步加入</text>
+    <text x="990" y="470" text-anchor="middle" font-size="14" fill="#536675">Wazuh Agent · Manager · Dashboard</text>
+
+    <path d="M990 510 V545" stroke="#83AD8B" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M980 535 L990 545 L1000 535" stroke="#83AD8B" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="355" y="555" width="490" height="68" rx="12" fill="#FFFFFF" stroke="#83AD8B" stroke-width="2.5"/>
+    <circle cx="389" cy="589" r="13" fill="#83AD8B"/>
+    <path d="M382 589 L387 594 L397 583" stroke="#FFFFFF" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="600" y="584" text-anchor="middle" font-size="20" font-weight="700" fill="#263746">一致、可复现的实验环境</text>
+    <text x="600" y="607" text-anchor="middle" font-size="15" fill="#536675">降低系统、版本、配置与依赖差异</text>
+  </g>
+</svg>
