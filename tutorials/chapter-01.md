@@ -29,7 +29,7 @@
 
 ### 1.2.1 CIA 三要素
 
-<img src="res/01/cia-triad.svg" alt="CIA 三要素" width="400">
+<img src="res/01/cia-triad.svg" alt="CIA 三要素" width="600">
 
 信息安全的三个基本目标是**Confidentiality**、**Integrity** 和 **Availability**，通常称为 CIA 三要素：
 
@@ -52,7 +52,7 @@
 
 这五个概念之间存在明确的逻辑关系：
 
-<img src="res/01/risk.svg" alt="风险公式" width="400">
+<img src="res/01/risk.svg" alt="风险公式" width="600">
 
 > **风险 = 威胁 × 漏洞 × 资产价值**
 
@@ -95,7 +95,7 @@ Equifax 事件的关键教训不是"黑客太厉害了"，而是企业安全体�
 
 用一个生活中的例子来理解。假设你住的是一栋房子，你有正门、后门、阳台、一楼窗户和车库。如果只有正门开放且安装了门锁，攻击者的入口只有一个。如果正门开着、后门开着、一楼窗户开着、车库门也开着，那么攻击面就非常大。
 
-<img src="res/01/attack-surface-house.svg" alt="攻击面示例" width="400">
+<img src="res/01/attack-surface-house.svg" alt="攻击面示例" width="600">
 
 对于线上服务来说，攻击面的大小取决于：
 
@@ -137,7 +137,7 @@ Equifax 事件的关键教训不是"黑客太厉害了"，而是企业安全体�
 
 Docker Compose 解决的是**实验环境标准化**的问题：
 
-<img src="res/01/lab-standardization.svg" alt="实验环境标准化" width="400">
+<img src="res/01/lab-standardization.svg" alt="实验环境标准化" width="600">
 
 但需要强调一个重要的概念：
 
@@ -411,7 +411,7 @@ Juice Shop 的设计目标就是包含漏洞，它是一个**安全靶场**，�
 
 我们需要在攻击者和应用之间建立多层次的防护。这被称为**纵深防御（Defense in Depth）**：
 
-<img src="res/01/defense-in-depth-current-state.svg" alt="当前状态" width="400">
+<img src="res/01/defense-in-depth-current-state.svg" alt="当前状态" width="600">
 
 
 在后续课程中，我们将逐步建立以下防护层：

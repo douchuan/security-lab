@@ -19,13 +19,13 @@ CEO 问你："你不是说我们的系统不安全吗？那我们现在能做什
 
 在上一章中，我们的架构是：
 
-<img src="res/02/attacker-direct-to-app.svg" alt="攻击者直接到达应用" width="400">
+<img src="res/02/attacker-direct-to-app.svg" alt="攻击者直接到达应用" width="600">
 
 攻击者的 HTTP 请求直接到达应用。这种架构存在一个根本问题：**请求到达应用之前，没有任何安全设备对其进行检测。**
 
 如果我们要在请求到达应用之前建立一道防线，需要在两者之间插入一个中间层：
 
-<img src="res/02/midldeware.svg" alt="新的中间层" width="400">
+<img src="res/02/midldeware.svg" alt="新的中间层" width="600">
 
 这个中间层需要做到：
 
@@ -132,7 +132,7 @@ WAF 的检测范围是有限的，明确这一点非常重要：
 
 三者的关系可以理解为：
 
-<img src="res/02/modsecurity.svg" alt="ModSecurity 关系" width="400" height="400">
+<img src="res/02/modsecurity.svg" alt="ModSecurity 关系" width="600" height="400">
 
 ModSecurity 本身是一个检测引擎，它需要规则集才能工作。OWASP CRS（Core Rule Set）就是这套规则。如果没有 CRS，ModSecurity 就像一本没有内容的法律书——框架在，但没有具体条款。
 
@@ -207,7 +207,7 @@ services:
 
 现在的架构是：
 
-<img src="res/02/dmz-net.svg" alt="DMZ 网络架构" width="400" height="400">
+<img src="res/02/dmz-net.svg" alt="DMZ 网络架构" width="600" height="400">
 
 ### 2.4.4 关键配置解释
 
@@ -660,7 +660,7 @@ Param:  q = ' OR 1=1 --
 
 结合我们已经部署和计划部署的安全控制，最终的安全架构是：
 
-<img src="res/02/arch.svg" alt="arch.svg" alt="arch"  width="400" height="400"/>
+<img src="res/02/arch.svg" alt="arch.svg" alt="arch"  width="600" height="400"/>
 
 每一层解决不同的问题：
 
