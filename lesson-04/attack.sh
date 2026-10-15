@@ -14,7 +14,7 @@ echo ""
 
 # 0. 确认容器正常运行
 echo "[Step 0] 检查容器状态..."
-WAZUH_RUNNING=$(docker compose ps --format "{{.Name}}\t{{.Status}}" 2>/dev/null | grep -c "^wazuh-agent" || echo "0")
+WAZUH_RUNNING=$(docker compose ps --format "{{.Name}}\t{{.Status}}" 2>/dev/null | grep -c "^wazuh-agent") || WAZUH_RUNNING=0
 if [ "$WAZUH_RUNNING" -gt 0 ]; then
   echo "  ✓ Wazuh Agent 正在运行"
 else

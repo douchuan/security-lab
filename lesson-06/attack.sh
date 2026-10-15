@@ -20,7 +20,7 @@ SERVICES=("nginx-modsecurity" "juice-shop" "wazuh-agent" "wazuh-manager" "wazuh-
 ALL_OK=true
 
 for svc in "${SERVICES[@]}"; do
-  STATUS=$(docker compose ps --format "{{.Name}} {{.Status}}" 2>/dev/null | grep "$svc" | grep -c "running" || echo "0")
+  STATUS=$(docker compose ps --format "{{.Name}} {{.Status}}" 2>/dev/null | grep "$svc" | grep -c "Up") || STATUS=0
   if [ "$STATUS" -gt 0 ]; then
     echo "  ✓ $svc 正在运行"
   else
@@ -127,7 +127,7 @@ echo "============================================"
 echo ""
 echo "  访问 Wazuh Dashboard:"
 echo "    URL: $DASHBOARD_URL"
-echo "    账号: admin / SecretPassword"
+echo "    账号: admin / admin"
 echo ""
 echo "  在 Dashboard 中查看:"
 echo "    1. Security Events — 查看所有安全事件"
