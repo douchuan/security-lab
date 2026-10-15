@@ -96,6 +96,7 @@ services:
     volumes:
       - ./configs/local_rules.xml:/var/ossec/etc/rules/local_rules.xml:ro
       - ./configs/decoders/modsec-decoder.xml:/var/ossec/etc/decoders/modsec-decoder.xml:ro
+      - ./configs/vd-disable.conf:/var/ossec/ossec.conf.overrides/vd-disable.conf:ro
       - wazuh-api-etc:/var/ossec/api/configuration
       - wazuh-manager-etc:/var/ossec/etc
       - wazuh-manager-var:/var/ossec
@@ -105,14 +106,14 @@ services:
     environment:
       - INDEXER_URL=https://wazuh-indexer:9200
       - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=SecretPassword
+      - INDEXER_PASSWORD=admin
       - FILEBEAT_SSL_VERIFICATION_MODE=none
     healthcheck:
       test: ["CMD-SHELL", "curl -sfk https://127.0.0.1:55000 -o /dev/null; [ $? -eq 0 -o $? -eq 22 ]"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 90s
+      start_period: 120s
     restart: unless-stopped
 
   # =====================
@@ -129,13 +130,19 @@ services:
     ports:
       - "9200:9200"
     environment:
-      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+      - OPENSEARCH_DISCOVERY_TYPE=single-node
+      - bootstrap_system_call_filter=false
+    volumes:
+      - wazuh-indexer-data:/var/lib/wazuh-indexer
+      - ./configs/indexer/entrypoint-wrapper.sh:/entrypoint-wrapper.sh
+    entrypoint: ["/bin/bash", "/entrypoint-wrapper.sh"]
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf https://localhost:9200 -k -u admin:SecretPassword || exit 1"]
+      test: ["CMD-SHELL", "curl -sf https://localhost:9200 -k -u admin:admin || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 120s
     restart: unless-stopped
 
   # Dashboard: Wazuh Dashboard
@@ -149,7 +156,9 @@ services:
     environment:
       - INDEXER_URL=https://wazuh-indexer:9200
       - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=SecretPassword
+      - INDEXER_PASSWORD=admin
+    volumes:
+      - ./configs/dashboard/opensearch_dashboards.yml:/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml:ro
     depends_on:
       wazuh-indexer:
         condition: service_healthy
@@ -170,3 +179,4 @@ volumes:
   wazuh-api-etc:
   wazuh-manager-etc:
   wazuh-manager-var:
+  wazuh-indexer-data:
