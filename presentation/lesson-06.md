@@ -90,6 +90,32 @@
 
 ---
 
+## DQL — Dashboard Query Language
+
+在 Dashboard 中筛选和检索告警，使用的是 **DQL**（Dashboard Query Language）。
+它运行在 OpenSearch Dashboards 搜索栏中，语法直观，底层自动转换为 Lucene 查询。
+
+### 基本语法：`字段名: 值`
+
+| 场景 | DQL 查询 |
+|------|----------|
+| WAF 告警 | `rule.groups: waf` |
+| SQL 注入 | `rule.groups: sqli` |
+| 高严重级别 | `rule.level >= 7` |
+| 特定规则 | `rule.id: 100022` |
+| 组合条件（AND） | `rule.groups: waf AND rule.level >= 10` |
+| 组合条件（OR） | `rule.groups: sqli OR rule.groups: xss` |
+| 排除某类事件 | `NOT rule.groups: sca` |
+| 通配符匹配 | `data.transaction.request.uri: /rest/*` |
+
+### 实操技巧
+
+1. 在 Dashboard 搜索栏直接输入 DQL 即可实时过滤
+2. 点击事件字段可快速添加筛选条件（自动构建 DQL）
+3. 用 `rule.level >= 7` 快速定位高风险告警，避免告警疲劳
+
+---
+
 ## SIEM 日志存储与成本控制
 
 部署 SIEM（如 Wazuh）时，需要关注日志持续增长带来的存储成本。日志保留策略应综合考虑**监管要求、业务需求和预算限制**。
