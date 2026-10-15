@@ -151,6 +151,7 @@ services:
     container_name: wazuh-dashboard
     networks:
       - dashboard-net
+      - siem-net
     ports:
       - "443:443"
     environment:
@@ -159,6 +160,7 @@ services:
       - INDEXER_PASSWORD=admin
     volumes:
       - ./configs/dashboard/opensearch_dashboards.yml:/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml:ro
+      - ./configs/dashboard/wazuh.yml:/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml:ro
     depends_on:
       wazuh-indexer:
         condition: service_healthy
