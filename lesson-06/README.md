@@ -12,7 +12,7 @@
 
 你是 CISO。你已经部署了完整的安全检测链路：
 
-> WAF → NIDS → HIDS → SIEM
+> WAF → HIDS → SIEM
 >
 > 每一层都在工作，日志在被收集，告警在被生成。
 >
@@ -49,12 +49,6 @@
 │              │           │   Manager    │     (SIEM)
 └──────────────┘           │   (SIEM)     │
        │                   │              │
-       ▼                   │  关联分析    │
-┌──────────────┐           │  告警生成    │
-│  Suricata    │ ─ 日志 ───┘
-│  (NIDS)      │                ← 你的眼睛
-└──────────────┘                (网络层)
-                          │
 ┌──────────────┐          ▼
 │ Wazuh Agent  │     ┌──────────────┐
 │  (HIDS)      │     │  OpenSearch  │  ← 你的存储
@@ -90,7 +84,6 @@ docker compose ps --format "table {{.Name}}\t{{.Status}}"
 你应该看到所有组件都在运行：
 - `juice-shop` — 你的应用
 - `nginx-modsecurity` — WAF
-- `suricata` — NIDS
 - `wazuh-agent` — HIDS
 - `wazuh-manager` — SIEM
 - `wazuh-indexer` — OpenSearch 存储
@@ -112,10 +105,9 @@ bash attack.sh
 
 脚本会依次执行：
 1. 💉 SQL 注入攻击 → WAF 检测
-2. 🔍 端口扫描 → Suricata 检测
-3. ☠️ 暴力破解 → Wazuh 关联检测
-4. ⏳ 等待告警聚合
-5. 📋 打印 Dashboard 访问指引
+2. ☠️ 暴力破解 → Wazuh 关联检测
+3. ⏳ 等待告警聚合
+4. 📋 打印 Dashboard 访问指引
 
 ### 手动验证完整链路
 
@@ -125,11 +117,6 @@ curl "http://localhost:80/rest/products/search?q=%27%20OR%201%3D1%20--"
 # 预期：WAF 返回 403，记录 ModSecurity 告警
 ```
 
-**2. 端口扫描（NIDS 层）：**
-```bash
-nmap -sT localhost -p 80,3000,8080
-# 预期：Suricata 检测到扫描行为
-```
 
 **3. 暴力破解（SIEM 层）：**
 ```bash
@@ -147,18 +134,17 @@ done
 
 ### 完整防御矩阵
 
-| 攻击类型 | WAF | NIDS | HIDS | SIEM | Dashboard |
+| 攻击类型 | WAF | HIDS | SIEM | Dashboard |
 |----------|-----|------|------|------|-----------|
 | SQL 注入 | 🛡️ 拦截 | | | 📋 记录 | 📊 展示 |
 | XSS | 🛡️ 拦截 | | | 📋 记录 | 📊 展示 |
-| 端口扫描 | | 🛡️ 检测 | | 📋 记录 | 📊 展示 |
 | 文件篡改 | | | 🛡️ 检测 | 📋 记录 | 📊 展示 |
 | 暴力破解 | | | | 🛡️ 关联告警 | 📊 展示 |
 
 ### 你需要思考的问题
 
 1. **同一个攻击会被多个组件检测到吗？** 会的！SQL 注入同时触发 WAF 告警和应用日志。SIEM 会把它们关联成同一个攻击事件。这就是**纵深防御**的价值——多层检测意味着攻击更难被遗漏。
-2. **如果某个组件宕机了会怎样？** 安全链路上会出现缺口。WAF 宕机 → Web 攻击无防护。NIDS 宕机 → 网络层盲区。Dashboard 宕机 → 你看不见但防御还在工作。**所以你需要 Component Health 面板。**
+2. **如果某个组件宕机了会怎样？** 安全链路上会出现缺口。WAF 宕机 → Web 攻击无防护。Dashboard 宕机 → 你看不见但防御还在工作。**所以你需要 Component Health 面板。**
 3. **这个环境和真实企业的差距在哪里？** 真实企业有更多组件（防火墙、EDR、SOAR）、更大规模（TB 级日志/天）、更复杂的威胁情报集成。但**核心架构思想是一样的**——分层防御、集中分析、可视化展示。
 4. **SolarWinds 的教训是什么？** 攻击者潜伏数月才被发现。如果有实时态势感知，攻击的每个阶段（初始访问、横向移动、数据外泄）都会被 Dashboard 上的告警标记出来。
 
@@ -167,7 +153,6 @@ done
 | 层级 | 组件 | 防护内容 | 状态 |
 |------|------|----------|------|
 | 应用层 | ModSecurity (WAF) | SQL 注入、XSS、目录遍历 | 🟢 |
-| 网络层 | Suricata (NIDS) | 端口扫描、网络攻击特征 | 🟢 |
 | 主机层 | Wazuh Agent (HIDS) | 文件变化、可疑进程、Rootkit | 🟢 |
 | 聚合层 | Wazuh Manager (SIEM) | 日志聚合、关联分析、暴力破解 | 🟢 |
 | 展示层 | Wazuh Dashboard | 安全态势可视化 | 🟢 |
@@ -203,7 +188,7 @@ done
 ### 你的完整攻击检测链路
 
 ```
-攻击发生 → WAF 拦截 → NIDS 检测 → HIDS 监控 → SIEM 聚合 → Dashboard 展示
+攻击发生 → WAF 拦截 → HIDS 监控 → SIEM 聚合 → Dashboard 展示
 ```
 
 每一层都是一个真实的、企业级的安全组件。它们组合在一起，形成了一个**完整、可运行、可观察、可演示的安全防御体系**。
@@ -216,7 +201,6 @@ done
 
 建议继续探索：
 - 编写 ModSecurity 自定义规则，防御特定的攻击模式
-- 尝试 Suricata 的 IPS 模式（从被动检测到主动拦截）
 - 扩展 Wazuh 规则，检测更多类型的威胁
 - 研究真实企业安全架构的设计模式（SOC、SOAR、威胁情报集成）
 

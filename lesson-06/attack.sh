@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MIT
 # Lesson 06 Attack Script — 完整安全链路端到端演示
-# 依次执行三种攻击场景，观察全链路检测效果。
+# 依次执行两种攻击场景，观察全链路检测效果。
 
 set -euo pipefail
 
@@ -10,13 +10,13 @@ DASHBOARD_URL="https://localhost:443"
 
 echo "╔══════════════════════════════════════════════════════════╗"
 echo "║     安全实验室 — 完整演示                                ║"
-echo "║     攻击 → WAF → NIDS → HIDS → SIEM → Dashboard        ║"
+echo "║     攻击 → WAF → HIDS → SIEM → Dashboard        ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
 
 # Step 0: 验证环境
 echo "[Step 0] 验证所有组件运行状态..."
-SERVICES=("nginx-modsecurity" "juice-shop" "suricata" "wazuh-agent" "wazuh-manager" "wazuh-indexer" "wazuh-dashboard")
+SERVICES=("nginx-modsecurity" "juice-shop" "wazuh-agent" "wazuh-manager" "wazuh-indexer" "wazuh-dashboard")
 ALL_OK=true
 
 for svc in "${SERVICES[@]}"; do
@@ -69,28 +69,9 @@ XSS_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
 echo "  结果: HTTP $XSS_CODE"
 echo ""
 
-# Step 2: 端口扫描
+# Step 2: 暴力破解
 echo "============================================"
-echo "  [攻击 2] 端口扫描 — Suricata NIDS 检测"
-echo "============================================"
-echo ""
-
-ATTACKER_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' juice-shop 2>/dev/null | head -1)
-
-if [ -n "$ATTACKER_IP" ]; then
-  echo "  扫描目标: $ATTACKER_IP"
-  docker run --rm --network lesson-06_monitor-net \
-    instrumentisto/nmap -sT -p 80,3000,3306,5432,8080,8443 "$ATTACKER_IP" \
-    --host-timeout 10s 2>/dev/null || echo "  (nmap 扫描完成)"
-else
-  echo "  ⚠ 无法获取目标 IP，尝试 localhost 扫描..."
-  nmap -sT localhost -p 80,3000 --host-timeout 10s 2>/dev/null || echo "  (nmap 可能未安装)"
-fi
-echo ""
-
-# Step 3: 暴力破解
-echo "============================================"
-echo "  [攻击 3] 暴力破解 — Wazuh SIEM 关联检测"
+echo "  [攻击 2] 暴力破解 — Wazuh SIEM 关联检测"
 echo "============================================"
 echo ""
 
@@ -114,7 +95,7 @@ done
 echo "  攻击完成: 总 50 次, 失败 $FAILED 次"
 echo ""
 
-# Step 4: 等待 SIEM 关联分析
+# Step 3: 等待 SIEM 关联分析
 echo "============================================"
 echo "  [等待] SIEM 关联分析中..."
 echo "============================================"
@@ -124,7 +105,7 @@ sleep 30
 echo "  ✓ 等待完成"
 echo ""
 
-# Step 5: 查看告警
+# Step 4: 查看告警
 echo "============================================"
 echo "  [告警] 查看检测到的安全事件"
 echo "============================================"
@@ -134,17 +115,12 @@ echo "  WAF (ModSecurity) 日志:"
 docker compose logs --tail=5 nginx-modsecurity 2>/dev/null | grep -i "denied\|blocked\|attack\|alert" | tail -3 || echo "  (无匹配)"
 echo ""
 
-echo "  Suricata 告警:"
-docker compose exec suricata cat /var/log/suricata/eve.json 2>/dev/null | \
-  grep -i "alert\|scan" | head -3 || echo "  (无匹配)"
-echo ""
-
 echo "  Wazuh Manager 告警:"
 docker compose exec wazuh-manager cat /var/ossec/logs/alerts/alerts.json 2>/dev/null | \
   grep -i "brute\|login\|auth" | head -3 || echo "  (无匹配)"
 echo ""
 
-# Step 6: Dashboard 指引
+# Step 5: Dashboard 指引
 echo "============================================"
 echo "  [Dashboard] 安全态势可视化"
 echo "============================================"
@@ -156,17 +132,16 @@ echo ""
 echo "  在 Dashboard 中查看:"
 echo "    1. Security Events — 查看所有安全事件"
 echo "    2. 按严重级别筛选 (Critical/High/Medium/Low)"
-echo "    3. 按来源筛选 (WAF/NIDS/HIDS)"
+echo "    3. 按来源筛选 (WAF/HIDS)"
 echo "    4. 查看攻击来源 IP"
 echo ""
 
 echo "╔══════════════════════════════════════════════════════════╗"
 echo "║  完整安全链路演示完成                                    ║"
 echo "║                                                        ║"
-echo "║  检测链路: 攻击 → WAF → NIDS → HIDS → SIEM → Dashboard ║"
+echo "║  检测链路: 攻击 → WAF → HIDS → SIEM → Dashboard ║"
 echo "║                                                        ║"
-echo "║  本次演示的三种攻击场景:                                 ║"
+echo "║  本次演示的两种攻击场景:                                 ║"
 echo "║    1. SQL 注入  → WAF (ModSecurity) 拦截                ║"
-echo "║    2. 端口扫描  → NIDS (Suricata) 检测                  ║"
-echo "║    3. 暴力破解  → SIEM (Wazuh) 关联告警                 ║"
+echo "║    2. 暴力破解  → SIEM (Wazuh) 关联告警                 ║"
 echo "╚══════════════════════════════════════════════════════════╝"

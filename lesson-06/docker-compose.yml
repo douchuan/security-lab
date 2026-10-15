@@ -6,8 +6,6 @@ networks:
   app-net:
     driver: bridge
     internal: true
-  monitor-net:
-    driver: bridge
   hids-net:
     driver: bridge
   siem-net:
@@ -58,29 +56,6 @@ services:
     restart: unless-stopped
 
   # =====================
-  # 网络层
-  # =====================
-
-  # NIDS: Suricata
-  suricata:
-    image: jasonish/suricata:latest
-    container_name: suricata
-    networks:
-      - monitor-net
-      - app-net
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    volumes:
-      - ./configs/suricata.yaml:/etc/suricata/suricata.yaml:ro
-      - ./configs/rules/custom.rules:/etc/suricata/rules/custom.rules:ro
-      - suricata-log:/var/log/suricata
-    command: >
-      -c /etc/suricata/suricata.yaml
-      -i eth1
-    restart: unless-stopped
-
-  # =====================
   # 主机层
   # =====================
 
@@ -126,7 +101,6 @@ services:
       - wazuh-manager-var:/var/ossec
       # 挂载其他组件日志供 SIEM 分析（Manager 直接读取 volume）
       - waf-log:/var/log/modsecurity:ro
-      - suricata-log:/var/log/suricata:ro
       - juice-shop-log:/var/log/juiceshop:ro
     environment:
       - INDEXER_URL=https://wazuh-indexer:9200
@@ -191,7 +165,6 @@ services:
 
 volumes:
   waf-log:
-  suricata-log:
   juice-shop-data:
   juice-shop-log:
   wazuh-api-etc:
