@@ -33,11 +33,15 @@ services:
     environment:
       - BACKEND=http://juice-shop:3000
       - MODSEC_RULE_ENGINE=On
+      - MODSEC_AUDIT_LOG=/var/log/modsecurity/audit.log
+      - MODSEC_AUDIT_ENGINE=On
+      - MODSEC_AUDIT_LOG_TYPE=Serial
     depends_on:
       - juice-shop
     restart: unless-stopped
     volumes:
       - waf-log:/var/log/modsecurity
+    user: "root"
 
   # 后端应用 (distroless 镜像，无 shell/curl/wget)
   juice-shop:
@@ -68,7 +72,8 @@ services:
       - NET_ADMIN
       - NET_RAW
     volumes:
-      - ../lesson-03/configs/suricata.yaml:/etc/suricata/suricata.yaml:ro
+      - ./configs/suricata.yaml:/etc/suricata/suricata.yaml:ro
+      - ./configs/rules/custom.rules:/etc/suricata/rules/custom.rules:ro
       - suricata-log:/var/log/suricata
     command: >
       -c /etc/suricata/suricata.yaml
@@ -81,13 +86,17 @@ services:
 
   # HIDS: Wazuh Agent
   wazuh-agent:
-    image: wazuh/wazuh-agent:4.9.0
+    image: wazuh/wazuh-agent:4.14.8
     container_name: wazuh-agent
     networks:
       - hids-net
       - siem-net
     volumes:
-      - ../lesson-04/configs/ossec.conf:/var/ossec/etc/ossec.conf:ro
+      # 日志收集：各组件日志通过 volume 挂载给 Agent
+      - juice-shop-log:/monitored/juice-shop/logs:ro
+      - waf-log:/monitored/modsecurity:ro
+      # Agent 配置
+      - ./configs/ossec.conf:/var/ossec/etc/ossec.conf:ro
     environment:
       - WAZUH_MANAGER=wazuh-manager
     depends_on:
@@ -101,7 +110,7 @@ services:
 
   # SIEM: Wazuh Manager
   wazuh-manager:
-    image: wazuh/wazuh-manager:4.9.0
+    image: wazuh/wazuh-manager:4.14.8
     container_name: wazuh-manager
     networks:
       - siem-net
@@ -110,11 +119,12 @@ services:
       - "1515:1515"
       - "55000:55000"
     volumes:
-      - ../lesson-05/configs/local_rules.xml:/var/ossec/etc/rules/local_rules.xml:ro
+      - ./configs/local_rules.xml:/var/ossec/etc/rules/local_rules.xml:ro
+      - ./configs/decoders/modsec-decoder.xml:/var/ossec/etc/decoders/modsec-decoder.xml:ro
       - wazuh-api-etc:/var/ossec/api/configuration
       - wazuh-manager-etc:/var/ossec/etc
       - wazuh-manager-var:/var/ossec
-      # 挂载其他组件日志供 SIEM 分析
+      # 挂载其他组件日志供 SIEM 分析（Manager 直接读取 volume）
       - waf-log:/var/log/modsecurity:ro
       - suricata-log:/var/log/suricata:ro
       - juice-shop-log:/var/log/juiceshop:ro
@@ -124,11 +134,11 @@ services:
       - INDEXER_PASSWORD=SecretPassword
       - FILEBEAT_SSL_VERIFICATION_MODE=none
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:55000 || exit 1"]
+      test: ["CMD-SHELL", "curl -sfk https://127.0.0.1:55000 -o /dev/null; [ $? -eq 0 -o $? -eq 22 ]"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 90s
     restart: unless-stopped
 
   # =====================
@@ -137,7 +147,7 @@ services:
 
   # 存储: Wazuh Indexer (OpenSearch)
   wazuh-indexer:
-    image: wazuh/wazuh-indexer:4.9.0
+    image: wazuh/wazuh-indexer:4.14.8
     container_name: wazuh-indexer
     networks:
       - siem-net
@@ -156,7 +166,7 @@ services:
 
   # Dashboard: Wazuh Dashboard
   wazuh-dashboard:
-    image: wazuh/wazuh-dashboard:4.9.0
+    image: wazuh/wazuh-dashboard:4.14.8
     container_name: wazuh-dashboard
     networks:
       - dashboard-net

@@ -1,0 +1,70 @@
+<!-- Wazuh Manager 本地规则 -->
+<!-- 暴力破解 (Juice Shop) + WAF 拦截 (ModSecurity) 两层检测 -->
+<!-- 自定义规则 ID: 100000 – 110000 为用户自定义范围，避免与内置规则 (1–99999) 冲突 -->
+
+<group name="local,">
+
+  <!-- ==================== Juice Shop 暴力破解检测 ==================== -->
+  <!-- Juice Shop access log 为 Morgan combined 格式，与 Apache/Nginx 标准格式一致 -->
+  <!-- Wazuh 内置 web-accesslog decoder 自动解析，提取 srcip/url/status 字段 -->
+
+  <!-- 规则 100001: 检测到失败的登录尝试 (HTTP 401 = 认证失败) -->
+  <rule id="100001" level="5">
+    <if_sid>31101</if_sid>
+    <match>/rest/user/login</match>
+    <description>Failed login attempt on Juice Shop from $(srcip)</description>
+  </rule>
+
+  <!-- 规则 100002: 暴力破解 — 频率关联分析 -->
+  <!-- 工作机制: Wazuh 维护一个计数器，跟踪每个源 IP 触发 rule 100001 的次数 -->
+  <!--   frequency="8"    → 2 分钟内累计 8 次失败登录才触发 -->
+  <!--   timeframe="120"  → 时间窗口 120 秒 -->
+  <!--   same_source_ip   → 只统计同一源 IP 的事件，不同 IP 分别计数 -->
+  <!--   if_matched_sid   → 关联 rule 100001 的触发事件 -->
+  <!-- 调优建议: 生产环境建议提高到 frequency=20 timeframe=300，降低误报 -->
+  <!-- 教学说明: 8/120 适合实验环境快速验证，生产值需根据业务流量调整 -->
+  <rule id="100002" level="10" frequency="8" timeframe="120">
+    <if_matched_sid>100001</if_matched_sid>
+    <same_source_ip />
+    <description>Brute force attack detected — multiple failed logins from $(srcip)</description>
+    <group>bruteforce,authentication,</group>
+  </rule>
+
+  <!-- 规则 100003: 暴力破解成功（失败后突然 200） -->
+  <!-- 注: rule 31150 may not exist in all Wazuh versions; this rule is informational -->
+  <rule id="100003" level="12">
+    <if_sid>31150</if_sid>
+    <match>/rest/user/login</match>
+    <description>Possible successful brute force attack on Juice Shop from $(srcip)</description>
+    <group>bruteforce,authentication,high_severity,</group>
+  </rule>
+
+  <!-- ==================== ModSecurity WAF 告警 ==================== -->
+  <!-- ModSecurity 审计日志为 JSON 格式，被 Wazuh 内置 json decoder 解析 -->
+  <!-- logtest 验证: Phase 2 decoder='json', 字段全部正确解析 -->
+
+  <!-- 规则 100020: ModSecurity 父规则 — 匹配来自 ModSecurity 的 JSON 审计日志 -->
+  <!-- 用 raw event 中的 producer 字段识别 ModSecurity 来源 -->
+  <rule id="100020" level="5">
+    <match>"producer":{"modsecurity":"ModSecurity</match>
+    <description>ModSecurity audit event detected from $(data.transaction.client_ip)</description>
+    <group>waf,</group>
+  </rule>
+
+  <!-- 规则 100021: ModSecurity 拦截了请求 (is_interrupted=true, 返回 403) -->
+  <rule id="100021" level="7">
+    <if_sid>100020</if_sid>
+    <match>"is_interrupted":true</match>
+    <description>ModSecurity blocked a request from $(data.transaction.client_ip)</description>
+    <group>web_attack,waf,</group>
+  </rule>
+
+  <!-- 规则 100022: ModSecurity 检测到 SQL 注入 (OWASP CRS rule 94x) -->
+  <rule id="100022" level="10">
+    <if_sid>100021</if_sid>
+    <match>"ruleId":"94</match>
+    <description>ModSecurity blocked SQL injection attempt from $(data.transaction.client_ip)</description>
+    <group>web_attack,waf,sqli,high_severity,</group>
+  </rule>
+
+</group>

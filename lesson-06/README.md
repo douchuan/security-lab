@@ -99,7 +99,8 @@ docker compose ps --format "table {{.Name}}\t{{.Status}}"
 ### 访问你的指挥中心
 
 - **Wazuh Dashboard**: https://localhost:443
-- **默认账号**: admin / admin
+- **默认账号**: admin / admin（首次登录需修改密码）
+- **Wazuh API**: admin / SecretPassword（用于索引器和内部通信）
 
 > ⚠️ 首次启动时 Dashboard 需要 60-90 秒初始化。请等待所有容器健康后再访问。
 
@@ -133,7 +134,7 @@ nmap -sT localhost -p 80,3000,8080
 **3. 暴力破解（SIEM 层）：**
 ```bash
 for i in $(seq 1 30); do
-  curl -s -X POST "http://localhost:80/api/users/login" \
+  curl -s -X POST "http://localhost:80/rest/user/login" \
     -H "Content-Type: application/json" \
     -d '{"email":"admin@test.com","password":"wrong'$i'"}' -o /dev/null
 done

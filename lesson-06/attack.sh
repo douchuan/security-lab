@@ -97,7 +97,7 @@ echo ""
 echo "  发送 50 次失败登录请求..."
 FAILED=0
 for i in $(seq 1 50); do
-  HTTP_CODE=$(curl -s -X POST "$WAF_URL/api/users/login" \
+  HTTP_CODE=$(curl -s -X POST "$WAF_URL/rest/user/login" \
     -H "Content-Type: application/json" \
     -d "{\"email\":\"admin@test.com\",\"password\":\"wrong_password_$i\"}" \
     -o /dev/null -w "%{http_code}" 2>/dev/null || echo "000")

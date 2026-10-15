@@ -1,0 +1,9 @@
+<!-- ModSecurity 自定义 Decoder (JSON 格式) -->
+<!-- 解析 SecAuditLogFormat JSON 输出的审计日志 -->
+<!-- 示例: {"transaction":{"client_ip":"1.2.3.4","uri":"/api/login","response":{"http_code":403},"messages":[{"details":{"ruleId":"949110"}}]}} -->
+<!-- 注意: Wazuh 内置 json decoder 会解析所有 JSON，我们的 decoder 提供更精确的 prematch 匹配 -->
+
+<decoder name="modsec-json">
+  <prematch>"transaction"</prematch>
+  <plugin_decoder>JSON_Decoder</plugin_decoder>
+</decoder>
