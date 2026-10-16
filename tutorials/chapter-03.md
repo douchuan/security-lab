@@ -136,7 +136,9 @@ Nmap 不仅能发现开放端口，还能通过更复杂的探测报文推断目
 
 NIDS 的典型工作位置：
 
-<img src="res/03/nids.svg" alt="nids.svg" width="600" height="400">
+<div align="center">
+<img src="res/03/nids.svg" alt="nids.svg" width="400" height="300">
+</div>
 
 NIDS 如何检测端口扫描：
 
@@ -327,7 +329,9 @@ alert tcp any any -> any 3000 (msg:"..."; sid:1000001; rev:1; classtype:attempte
 
 **网络拓扑：**
 
-<img src="res/03/net-topo.svg" alt="net-topo.svg" width="600" height="400">
+<div align="center">
+<img src="res/03/net-topo.svg" alt="net-topo.svg" width="400" height="400">
+</div>
 
 **为什么需要两台主机？** Suricata 需要监控**来自其他主机的流量**。如果扫描者和目标在同一台机器上，流量可能走回环接口（loopback），而 Suricata 监听的是物理网卡。为了观察真实的网络检测，扫描必须通过网络进行。
 

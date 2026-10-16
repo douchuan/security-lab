@@ -28,6 +28,10 @@ services:
       - app-net
     ports:
       - "80:8080"
+
+    # - `RULE_ENGINE=On` + `AUDIT_ENGINE=On`：拦攻击 + 记录所有请求（你现在的配置，适合学习实验，因为能看到完整的攻击请求长什么样）
+    # - `RULE_ENGINE=On` + `AUDIT_ENGINE=RelevantOnly`：拦攻击 + 只记录被拦的请求（生产环境常用）
+    # - `RULE_ENGINE=DetectionOnly` + `AUDIT_ENGINE=On`：不拦但记录所有请求（上线前先观察误报）
     environment:
       - BACKEND=http://juice-shop:3000
       - MODSEC_RULE_ENGINE=On
@@ -39,6 +43,8 @@ services:
     restart: unless-stopped
     volumes:
       - waf-log:/var/log/modsecurity
+    # Note: 
+    # 容器以 root 运行违背最小权限原则。如果 WAF 容器被攻破，攻击者拿到的就是容器内 root 权限，逃逸到宿主机的风险更大
     user: "root"
 
   # 后端应用 (distroless 镜像，无 shell/curl/wget)
